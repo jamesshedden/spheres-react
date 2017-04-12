@@ -1,0 +1,50 @@
+.content {
+  height: 100%;
+  background: linear-gradient(45deg, #A1FFFC 0%, #523191 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.content__overlay {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  background: linear-gradient(45deg, #A1FFFC 0%, #523191 100%);
+  background: url('/texture3.jpg');
+  opacity: 0.15;
+}
+
+.circle {
+  border-radius: 50%;
+  z-index: 1;
+  position: absolute;
+}
+
+.circle:after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(45deg, #A1FFFC 0%, #523191 100%);
+  background: url('/texture3.jpg');
+  opacity: 0.15;
+  border-radius: 50%;
+}
+
+.example-enter {
+  opacity: 0;
+}
+
+.example-enter.example-enter-active {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.example-leave {
+  opacity: 1;
+}
+
+.example-leave.example-leave-active {
+  opacity: 0;
+  transition: opacity 1s ease;
+}
