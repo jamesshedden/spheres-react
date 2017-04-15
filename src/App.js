@@ -18,6 +18,9 @@ class App extends Component {
       circles: [],
       backgroundColor1: 'FEB522',
       backgroundColor2: 'A1FFFC',
+      startedDraggingAt: 0,
+      isDragging: false,
+      activeCircle: null,
     };
   }
 
@@ -98,21 +101,66 @@ class App extends Component {
     COUNTER++;
   };
 
+  transformCircles = (circles, x, y) => {
+    _.map(circles, (circle, index) => {
+      const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
+        this.getPointerCoordinatesFromCentre(x, y),
+        index,
+        PARALLAX_AMOUNT_DIVISOR
+      );
+
+      circle.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`;
+    });
+  }
+
   onMouseMove = (event) => {
     const { pageX, pageY } = event;
     let circles = document.getElementsByClassName('circle');
 
     if (circles.length) {
-      _.map(circles, (circle, index) => {
-        const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
-          this.getPointerCoordinatesFromCentre(pageX, pageY),
-          index,
-          PARALLAX_AMOUNT_DIVISOR
-        );
-
-        circle.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`;
-      });
+      this.transformCircles(circles, pageX, pageY);
     }
+
+    if (this.state.activeCircle) {
+      console.log('yeah');
+      const multiplierForTranslateAmounts =
+        this.state.activeCircle.id > MAX_CIRCLE_AMOUNT ?
+          MAX_CIRCLE_AMOUNT : this.state.activeCircle.id;
+
+      const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
+        this.getPointerCoordinatesFromCentre(pageX, pageY),
+        multiplierForTranslateAmounts,
+        PARALLAX_AMOUNT_DIVISOR
+      );
+
+      let newCircles = this.state.circles;
+
+      let activeCircleIndex = _.findIndex(newCircles, { id: this.state.activeCircle.id });
+
+      const { pointerDistanceFromCircleCentre } = this.state.activeCircle;
+
+      // Below is suffering a bit from parallax stuff — circles near the edge of the screen jump more when dragged
+
+      let top = pageY - translateY - (newCircles[activeCircleIndex].height / 2) - pointerDistanceFromCircleCentre.y;
+      let left = pageX - translateX - (newCircles[activeCircleIndex].width / 2) - pointerDistanceFromCircleCentre.x;
+
+      newCircles[activeCircleIndex] = _.assign({}, newCircles[activeCircleIndex], {
+        distanceAsPercent: {
+          top: (top * 100) / window.innerHeight,
+          left: (left * 100) / window.innerWidth,
+        },
+        top,
+        left,
+        translateX,
+        translateY,
+      });
+
+      this.setState({ circles: newCircles });
+    }
+  }
+
+  onMouseDown = (event) => {
+    if (!_.includes(event.target.classList, 'circle')) this.setState({ activeCircle: null })
   }
 
   render() {
@@ -122,7 +170,15 @@ class App extends Component {
         event.persist();
         _.throttle(this.onMouseMove.bind(this, event), 10)();
       } }
-      onClick={ this.makeCircle }
+      onMouseDown={ this.onMouseDown }
+      onMouseUp={ (event) => {
+        if (this.state.activeCircle && event.timeStamp - this.state.activeCircle.activeAt > 200) {
+          this.setState({ activeCircle: null });
+        } else {
+          this.makeCircle(event);
+          this.setState({ activeCircle: null });
+        };
+      } }
       >
         <div className="content__overlay"></div>
 
@@ -130,10 +186,32 @@ class App extends Component {
         transitionName="example"
         transitionEnterTimeout={200}
         transitionLeaveTimeout={1000}>
-          { this.state.circles.map((circle) => {
+          { this.state.circles.map((circle, index) => {
             return (
               <div className="circle"
+              id={ circle.id }
               key={ circle.id }
+              onMouseDown={ (event) => {
+                const { pageX, pageY } = event;
+
+                let activeCircleCentreCoordinates = {
+                  x: circle.left + (circle.width / 2),
+                  y: circle.top + (circle.height / 2),
+                }
+
+                let pointerDistanceFromCircleCentre = {
+                  x: pageX - activeCircleCentreCoordinates.x,
+                  y: pageY - activeCircleCentreCoordinates.y,
+                }
+
+                this.setState({
+                  activeCircle: {
+                    id: circle.id,
+                    activeAt: event.timeStamp,
+                    pointerDistanceFromCircleCentre,
+                  },
+                });
+              }}
               style={ {
                 background: circle.background,
                 transform: `translateX(${ circle.translateX }px) translateY(${ circle.translateY }px)`,
@@ -141,7 +219,9 @@ class App extends Component {
                 left: `${ circle.left }px`,
                 width: circle.width,
                 height: circle.height,
-              } } />
+              } }>
+                {/* <div style={{background: 'white', flex: '1 1 auto', fontSize: '15px', fontWeight: 'bold'}}>{circle.id}</div> */}
+              </div>
             );
           }) }
         </CSSTransitionGroup>
