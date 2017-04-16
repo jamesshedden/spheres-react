@@ -47,7 +47,7 @@ class App extends Component {
 
   getPointerCoordinatesFromCentre = (positionX, positionY) => {
     return {
-      x: positionX - (window.innerWidth / 2),
+      x: (window.innerWidth / 2) - positionX,
       y: (window.innerHeight / 2) - positionY,
     };
   }
@@ -57,9 +57,12 @@ class App extends Component {
     // multiplier comes from the counter, or the array index of a circle element, so
     // will sometimes be 0 or 1 but we don't want to multiply by these
 
+    const translateX = (coordinates.x * (multiplierFromZero + MULTIPLIER_BUFFER)) / divisor;
+    const translateY = (coordinates.y * (multiplierFromZero + MULTIPLIER_BUFFER)) / divisor;
+
     return {
-      translateX: -(coordinates.x * (multiplierFromZero + MULTIPLIER_BUFFER)) / divisor,
-      translateY: (coordinates.y * (multiplierFromZero + MULTIPLIER_BUFFER)) / divisor,
+      translateX,
+      translateY,
     };
   }
 
@@ -122,7 +125,6 @@ class App extends Component {
     }
 
     if (this.state.activeCircle) {
-      console.log('yeah');
       const multiplierForTranslateAmounts =
         this.state.activeCircle.id > MAX_CIRCLE_AMOUNT ?
           MAX_CIRCLE_AMOUNT : this.state.activeCircle.id;
@@ -193,6 +195,7 @@ class App extends Component {
               key={ circle.id }
               onMouseDown={ (event) => {
                 const { pageX, pageY } = event;
+                const { translateX, translateY } = circle;
 
                 let activeCircleCentreCoordinates = {
                   x: circle.left + (circle.width / 2),
@@ -200,9 +203,11 @@ class App extends Component {
                 }
 
                 let pointerDistanceFromCircleCentre = {
-                  x: pageX - activeCircleCentreCoordinates.x,
-                  y: pageY - activeCircleCentreCoordinates.y,
+                  x: pageX - translateX - activeCircleCentreCoordinates.x,
+                  y: pageY - translateY - activeCircleCentreCoordinates.y,
                 }
+
+                console.log('pointerDistanceFromCircleCentre', pointerDistanceFromCircleCentre);
 
                 this.setState({
                   activeCircle: {
