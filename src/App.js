@@ -3,10 +3,13 @@ import _ from 'lodash';
 import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup';
 import './App.css';
 
-let COUNTER = 0;
+let SPHERE_COUNTER = 0;
+let STAR_COUNTER = 0;
 
 const MAX_CIRCLE_AMOUNT = 12;
+const MAX_STARS_AMOUNT = 12;
 const PARALLAX_AMOUNT_DIVISOR = 80;
+const STAR_SHOW_INTERVAL = 1000;
 
 const COLORS = ['#FF9E9E', '#9EFFC6', '#9EEFFF', '#D8CEFF', '#B6FF9E'];
 
@@ -21,11 +24,28 @@ class App extends Component {
       startedDraggingAt: 0,
       isDragging: false,
       activeCircle: null,
+      stars: [],
+      showDiv: false,
     };
   }
 
   componentDidMount() {
     window.addEventListener("resize", this.throttledWindowResize); // TODO: remove event listener on unmount
+    setInterval(this.addStar, STAR_SHOW_INTERVAL);
+  }
+
+  addStar = () => {
+    let { stars } = this.state;
+
+    stars.push({
+      id: STAR_COUNTER,
+      top: this.randomNumber(0, window.innerHeight),
+      left: this.randomNumber(0, window.innerWidth),
+    });
+
+    let newStars = stars.length > MAX_STARS_AMOUNT ? stars.slice(1, stars.length) : stars;
+    this.setState({ stars: newStars });
+    STAR_COUNTER++;
   }
 
   throttledWindowResize = () => {
@@ -68,7 +88,7 @@ class App extends Component {
 
   makeCircle = (event) => {
     const randomDimension = this.randomNumber(100, 250);
-    const multiplierForTranslateAmounts = COUNTER > MAX_CIRCLE_AMOUNT ? MAX_CIRCLE_AMOUNT : COUNTER;
+    const multiplierForTranslateAmounts = SPHERE_COUNTER > MAX_CIRCLE_AMOUNT ? MAX_CIRCLE_AMOUNT : SPHERE_COUNTER;
 
     const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
       this.getPointerCoordinatesFromCentre(event.pageX, event.pageY),
@@ -85,7 +105,7 @@ class App extends Component {
     let left = event.pageX - translateX - (randomDimension / 2);
 
     circles.push({
-      id: COUNTER,
+      id: SPHERE_COUNTER,
       background,
       width: randomDimension,
       height: randomDimension,
@@ -101,7 +121,7 @@ class App extends Component {
 
     let newCircles = circles.length > MAX_CIRCLE_AMOUNT ? circles.slice(1, circles.length) : circles;
     this.setState({ circles: newCircles });
-    COUNTER++;
+    SPHERE_COUNTER++;
   };
 
   transformCircles = (circles, x, y) => {
@@ -182,7 +202,36 @@ class App extends Component {
         };
       } }
       >
+        <CSSTransitionGroup
+        transitionName="star"
+        transitionEnterTimeout={1000}
+        transitionLeaveTimeout={2000}>
+          { this.state.stars.map((star, index) => {
+            return (
+              <div
+              // id={ star.id }
+              key={ star.id }
+              className="star"
+              style={{
+                width: '3px',
+                height: '3px',
+                top: star.top,
+                left: star.left,
+                background: 'white',
+                borderRadius: '50%',
+              }} />
+            );
+          }) }
+        </CSSTransitionGroup>
+
         <div className="content__overlay"></div>
+
+        <CSSTransitionGroup
+        transitionName="star"
+        transitionEnterTimeout={1000}
+        transitionLeaveTimeout={2000}>
+          { this.state.showDiv ? <div>Hey</div> : null }
+        </CSSTransitionGroup>
 
         <CSSTransitionGroup
         transitionName="example"
