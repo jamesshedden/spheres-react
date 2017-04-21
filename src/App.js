@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
 import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup';
+import Stars from './Stars';
 import './App.css';
 
 let SPHERE_COUNTER = 0;
@@ -9,7 +10,6 @@ let STAR_COUNTER = 0;
 const MAX_CIRCLE_AMOUNT = 12;
 const MAX_STARS_AMOUNT = 12;
 const PARALLAX_AMOUNT_DIVISOR = 80;
-const STAR_SHOW_INTERVAL = 1000;
 
 const COLORS = ['#FF9E9E', '#9EFFC6', '#9EEFFF', '#D8CEFF', '#B6FF9E'];
 
@@ -31,7 +31,6 @@ class App extends Component {
 
   componentDidMount() {
     window.addEventListener("resize", this.throttledWindowResize); // TODO: remove event listener on unmount
-    setInterval(this.addStar, STAR_SHOW_INTERVAL);
   }
 
   addStar = () => {
@@ -202,27 +201,9 @@ class App extends Component {
         };
       } }
       >
-        <CSSTransitionGroup
-        transitionName="star"
-        transitionEnterTimeout={1000}
-        transitionLeaveTimeout={2000}>
-          { this.state.stars.map((star, index) => {
-            return (
-              <div
-              // id={ star.id }
-              key={ star.id }
-              className="star"
-              style={{
-                width: '3px',
-                height: '3px',
-                top: star.top,
-                left: star.left,
-                background: 'white',
-                borderRadius: '50%',
-              }} />
-            );
-          }) }
-        </CSSTransitionGroup>
+        <Stars />
+        <Stars />
+        <Stars />
 
         <div className="content__overlay"></div>
 
@@ -239,42 +220,57 @@ class App extends Component {
         transitionLeaveTimeout={1000}>
           { this.state.circles.map((circle, index) => {
             return (
-              <div className="circle"
-              id={ circle.id }
-              key={ circle.id }
-              onMouseDown={ (event) => {
-                const { pageX, pageY } = event;
-                const { translateX, translateY } = circle;
-
-                let activeCircleCentreCoordinates = {
-                  x: circle.left + (circle.width / 2),
-                  y: circle.top + (circle.height / 2),
+              <div key={ circle.id }
+              style={{
+                position: 'absolute',
+                zIndex: 1,
+              }}>
+                {
+                  index === 5 ?
+                    <span key={ index }>
+                      <Stars />
+                      <Stars />
+                      <Stars />
+                    </span> :
+                    null
                 }
 
-                let pointerDistanceFromCircleCentre = {
-                  x: pageX - translateX - activeCircleCentreCoordinates.x,
-                  y: pageY - translateY - activeCircleCentreCoordinates.y,
-                }
+                <div className="circle"
+                id={ circle.id }
+                onMouseDown={ (event) => {
+                  const { pageX, pageY } = event;
+                  const { translateX, translateY } = circle;
 
-                console.log('pointerDistanceFromCircleCentre', pointerDistanceFromCircleCentre);
+                  let activeCircleCentreCoordinates = {
+                    x: circle.left + (circle.width / 2),
+                    y: circle.top + (circle.height / 2),
+                  }
 
-                this.setState({
-                  activeCircle: {
-                    id: circle.id,
-                    activeAt: event.timeStamp,
-                    pointerDistanceFromCircleCentre,
-                  },
-                });
-              }}
-              style={ {
-                background: circle.background,
-                transform: `translateX(${ circle.translateX }px) translateY(${ circle.translateY }px)`,
-                top: `${ circle.top }px`,
-                left: `${ circle.left }px`,
-                width: circle.width,
-                height: circle.height,
-              } }>
-                {/* <div style={{background: 'white', flex: '1 1 auto', fontSize: '15px', fontWeight: 'bold'}}>{circle.id}</div> */}
+                  let pointerDistanceFromCircleCentre = {
+                    x: pageX - translateX - activeCircleCentreCoordinates.x,
+                    y: pageY - translateY - activeCircleCentreCoordinates.y,
+                  }
+
+                  console.log('pointerDistanceFromCircleCentre', pointerDistanceFromCircleCentre);
+
+                  this.setState({
+                    activeCircle: {
+                      id: circle.id,
+                      activeAt: event.timeStamp,
+                      pointerDistanceFromCircleCentre,
+                    },
+                  });
+                }}
+                style={ {
+                  background: circle.background,
+                  transform: `translateX(${ circle.translateX }px) translateY(${ circle.translateY }px)`,
+                  top: `${ circle.top }px`,
+                  left: `${ circle.left }px`,
+                  width: circle.width,
+                  height: circle.height,
+                } }>
+                  {/* <div style={{background: 'white', flex: '1 1 auto', fontSize: '15px', fontWeight: 'bold'}}>{circle.id}</div> */}
+                </div>
               </div>
             );
           }) }
