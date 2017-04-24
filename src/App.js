@@ -25,6 +25,7 @@ class App extends Component {
       activeCircle: null,
       stars: [],
       showDiv: false,
+      circleElements: [],
     };
   }
 
@@ -118,7 +119,11 @@ class App extends Component {
     });
 
     let newCircles = circles.length > MAX_CIRCLE_AMOUNT ? circles.slice(1, circles.length) : circles;
-    this.setState({ circles: newCircles });
+    this.setState({
+      circles: newCircles,
+      circleElements: document.getElementsByClassName('circle'),
+    });
+    // this.setState({ circleElements: document.getElementsByClassName('circle') });
     SPHERE_COUNTER++;
   };
 
@@ -169,16 +174,35 @@ class App extends Component {
     this.setState({ circles: newCircles });
   }
 
+  moveActiveCircle = (element, pageX, pageY) => {
+    const multiplierForTranslateAmounts =
+      this.state.activeCircle.id > MAX_CIRCLE_AMOUNT ?
+        MAX_CIRCLE_AMOUNT : this.state.activeCircle.id;
+
+    const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
+      this.getPointerCoordinatesFromCentre(pageX, pageY),
+      multiplierForTranslateAmounts,
+      PARALLAX_AMOUNT_DIVISOR
+    );
+
+    const { pointerDistanceFromCircleCentre } = this.state.activeCircle;
+
+    let top = pageY - translateY - (element.offsetHeight / 2) - pointerDistanceFromCircleCentre.y;
+    let left = pageX - translateX - (element.offsetWidth / 2) - pointerDistanceFromCircleCentre.x;
+
+    element.style.top = `${ top }px`;
+    element.style.left = `${ left }px`;
+  }
+
   onMouseMove = (event) => {
     const { pageX, pageY } = event;
-    let circles = document.getElementsByClassName('circle');
 
-    if (circles.length) {
-      this.transformCircles(circles, pageX, pageY);
+    if (this.state.circleElements.length) {
+      this.transformCircles(this.state.circleElements, pageX, pageY);
     }
 
     if (this.state.activeCircle) {
-      this.transformActiveCircle(pageX, pageY);
+      this.moveActiveCircle(this.state.activeCircle.element, pageX, pageY);
     }
   }
 
@@ -195,6 +219,7 @@ class App extends Component {
 
   onMouseUp = (event) => {
     if (this.state.activeCircle && event.timeStamp - this.state.activeCircle.activeAt > 200) {
+      this.transformActiveCircle(event.pageX, event.pageY);
       this.setState({ activeCircle: null });
     } else {
       this.makeCircle(event);
@@ -209,7 +234,6 @@ class App extends Component {
       onMouseDown={ this.onMouseDown }
       onMouseUp={ this.onMouseUp }
       >
-
         <div className="content__overlay"></div>
 
         <CSSTransitionGroup
@@ -218,53 +242,49 @@ class App extends Component {
         transitionLeaveTimeout={1000}>
           { this.state.circles.map((circle, index) => {
             return (
-              <div key={ circle.id }
-              style={{
-                position: 'absolute',
-                zIndex: 1,
-              }}>
-                <div className="circle"
-                id={ circle.id }
-                onMouseDown={ (event) => {
-                  const { pageX, pageY } = event;
-                  const { translateX, translateY } = circle;
+              <div className="circle"
+              id={ `circle-${ circle.id }` }
+              key={ circle.id }
+              onMouseDown={ (event) => {
+                const { pageX, pageY } = event;
+                const { translateX, translateY } = circle;
 
-                  let activeCircleCentreCoordinates = {
-                    x: circle.left + (circle.width / 2),
-                    y: circle.top + (circle.height / 2),
-                  }
+                let activeCircleCentreCoordinates = {
+                  x: circle.left + (circle.width / 2),
+                  y: circle.top + (circle.height / 2),
+                }
 
-                  let pointerDistanceFromCircleCentre = {
-                    x: pageX - translateX - activeCircleCentreCoordinates.x,
-                    y: pageY - translateY - activeCircleCentreCoordinates.y,
-                  }
+                let pointerDistanceFromCircleCentre = {
+                  x: pageX - translateX - activeCircleCentreCoordinates.x,
+                  y: pageY - translateY - activeCircleCentreCoordinates.y,
+                }
 
-                  this.setState({
-                    activeCircle: {
-                      id: circle.id,
-                      activeAt: event.timeStamp,
-                      pointerDistanceFromCircleCentre,
-                    },
-                  });
-                }}
-                style={ {
-                  background: circle.background,
-                  transform: `translateX(${ circle.translateX }px) translateY(${ circle.translateY }px)`,
-                  top: `${ circle.top }px`,
-                  left: `${ circle.left }px`,
-                  width: circle.width,
-                  height: circle.height,
-                } }>
-                  {/* <div style={{background: 'white', flex: '1 1 auto', fontSize: '15px', fontWeight: 'bold'}}>
-                    {circle.id}
-                    { 1 - (index) / 10 }
-                  </div> */}
+                this.setState({
+                  activeCircle: {
+                    id: circle.id,
+                    element: event.target,
+                    activeAt: event.timeStamp,
+                    pointerDistanceFromCircleCentre,
+                  },
+                });
+              }}
+              style={ {
+                background: circle.background,
+                transform: `translateX(${ circle.translateX }px) translateY(${ circle.translateY }px)`,
+                top: `${ circle.top }px`,
+                left: `${ circle.left }px`,
+                width: circle.width,
+                height: circle.height,
+              } }>
+                {/* <div style={{background: 'white', flex: '1 1 auto', fontSize: '15px', fontWeight: 'bold'}}>
+                  {circle.id}
+                  { 1 - (index) / 10 }
+                </div> */}
 
-                  {/* <div className="circle__inner" style={ {
-                    opacity: ((11 - index) / 10) / 4,
-                    background: '#A1FFFC',
-                  } } /> */}
-                </div>
+                {/* <div className="circle__inner" style={ {
+                  opacity: ((11 - index) / 10) / 4,
+                  background: '#A1FFFC',
+                } } /> */}
               </div>
             );
           }) }
@@ -273,6 +293,7 @@ class App extends Component {
         <Stars key={ 1 } />
         <Stars key={ 2 } />
         <Stars key={ 3 } />
+        <Stars key={ 4 } />
       </div>
     );
   }
