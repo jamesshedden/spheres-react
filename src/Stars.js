@@ -4,8 +4,9 @@ import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup';
 import './Stars.css';
 
 let STAR_COUNTER = 0;
-const MAX_STARS_AMOUNT = 2;
-const STAR_SHOW_INTERVAL = 300;
+const MAX_STARS_AMOUNT = 4;
+const STAR_SHOW_INTERVAL = 2000;
+const BACKGROUND_STARS_TOTAL = 30;
 const COLORS = ['#FF9E9E', '#9EFFC6', '#9EEFFF', '#D8CEFF', '#B6FF9E'];
 
 class Stars extends Component {
@@ -14,11 +15,23 @@ class Stars extends Component {
 
     this.state = {
       stars: [],
+      backgroundStars: this.generateStars(),
     };
   }
 
   componentDidMount() {
     setInterval(this.addStar, STAR_SHOW_INTERVAL);
+  }
+
+  generateStars = () => {
+    return [...Array(BACKGROUND_STARS_TOTAL)].map((index) => {
+      return {
+        id: index,
+        top: this.randomNumber(0, window.innerHeight),
+        left: this.randomNumber(0, window.innerWidth),
+        background: COLORS[this.randomNumber(0, COLORS.length)],
+      };
+    });
   }
 
   addStar = () => {
@@ -28,7 +41,7 @@ class Stars extends Component {
       id: STAR_COUNTER,
       top: this.randomNumber(0, window.innerHeight),
       left: this.randomNumber(0, window.innerWidth),
-      scale: this.randomNumber(0.9, 1.1),
+      background: COLORS[this.randomNumber(0, COLORS.length)],
     });
 
     let newStars = stars.length > MAX_STARS_AMOUNT ? stars.slice(1, stars.length) : stars;
@@ -40,27 +53,40 @@ class Stars extends Component {
 
   render() {
     return (
-      <CSSTransitionGroup
-      transitionName="star"
-      transitionEnterTimeout={2000}
-      transitionLeaveTimeout={2000}>
-        { this.state.stars.map((star, index) => {
+      <div id="stars">
+        { this.state.backgroundStars.map((backgroundStar, index) => {
           return (
             <div
-            key={ star.id }
+            key={ index }
             className="star"
             style={{
-              width: '3px',
-              height: '3px',
-              top: star.top,
-              left: star.left,
-              background: COLORS[this.randomNumber(0, COLORS.length)],
-              // transform: `scale(${ star.scale })`,
-              borderRadius: '50%',
+              zIndex: this.props.zIndex,
+              top: backgroundStar.top,
+              left: backgroundStar.left,
+              background: backgroundStar.background,
             }} />
           );
         }) }
-      </CSSTransitionGroup>
+
+        <CSSTransitionGroup
+        transitionName="star"
+        transitionEnterTimeout={2000}
+        transitionLeaveTimeout={2000}>
+          { this.state.stars.map((star, index) => {
+            return (
+              <div
+              key={ star.id }
+              className="star"
+              style={{
+                zIndex: this.props.zIndex,
+                top: star.top,
+                left: star.left,
+                background: star.background,
+              }} />
+            );
+          }) }
+        </CSSTransitionGroup>
+      </div>
     );
   }
 }

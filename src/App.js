@@ -6,9 +6,8 @@ import './App.css';
 
 let SPHERE_COUNTER = 0;
 let STAR_COUNTER = 0;
-
-const MAX_CIRCLE_AMOUNT = 12;
-const MAX_STARS_AMOUNT = 12;
+const MAX_CIRCLE_AMOUNT = 10;
+const MAX_STARS_AMOUNT = 10;
 const PARALLAX_AMOUNT_DIVISOR = 80;
 
 const COLORS = ['#FF9E9E', '#9EFFC6', '#9EEFFF', '#D8CEFF', '#B6FF9E'];
@@ -135,6 +134,41 @@ class App extends Component {
     });
   }
 
+  transformActiveCircle = (pageX, pageY) => {
+    const multiplierForTranslateAmounts =
+      this.state.activeCircle.id > MAX_CIRCLE_AMOUNT ?
+        MAX_CIRCLE_AMOUNT : this.state.activeCircle.id;
+
+    const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
+      this.getPointerCoordinatesFromCentre(pageX, pageY),
+      multiplierForTranslateAmounts,
+      PARALLAX_AMOUNT_DIVISOR
+    );
+
+    let newCircles = this.state.circles;
+    let activeCircleIndex = _.findIndex(newCircles, { id: this.state.activeCircle.id });
+    const { pointerDistanceFromCircleCentre } = this.state.activeCircle;
+
+    // Below is suffering a bit from parallax stuff — circles near the edge of the screen jump more when dragged
+    let top = pageY - translateY - (newCircles[activeCircleIndex].height / 2) - pointerDistanceFromCircleCentre.y;
+    let left = pageX - translateX - (newCircles[activeCircleIndex].width / 2) - pointerDistanceFromCircleCentre.x;
+
+    let distanceAsPercent = {
+      top: (top * 100) / window.innerHeight,
+      left: (left * 100) / window.innerWidth,
+    };
+
+    newCircles[activeCircleIndex] = _.assign({}, newCircles[activeCircleIndex], {
+      distanceAsPercent,
+      top,
+      left,
+      translateX,
+      translateY,
+    });
+
+    this.setState({ circles: newCircles });
+  }
+
   onMouseMove = (event) => {
     const { pageX, pageY } = event;
     let circles = document.getElementsByClassName('circle');
@@ -144,75 +178,39 @@ class App extends Component {
     }
 
     if (this.state.activeCircle) {
-      const multiplierForTranslateAmounts =
-        this.state.activeCircle.id > MAX_CIRCLE_AMOUNT ?
-          MAX_CIRCLE_AMOUNT : this.state.activeCircle.id;
-
-      const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
-        this.getPointerCoordinatesFromCentre(pageX, pageY),
-        multiplierForTranslateAmounts,
-        PARALLAX_AMOUNT_DIVISOR
-      );
-
-      let newCircles = this.state.circles;
-
-      let activeCircleIndex = _.findIndex(newCircles, { id: this.state.activeCircle.id });
-
-      const { pointerDistanceFromCircleCentre } = this.state.activeCircle;
-
-      // Below is suffering a bit from parallax stuff — circles near the edge of the screen jump more when dragged
-
-      let top = pageY - translateY - (newCircles[activeCircleIndex].height / 2) - pointerDistanceFromCircleCentre.y;
-      let left = pageX - translateX - (newCircles[activeCircleIndex].width / 2) - pointerDistanceFromCircleCentre.x;
-
-      newCircles[activeCircleIndex] = _.assign({}, newCircles[activeCircleIndex], {
-        distanceAsPercent: {
-          top: (top * 100) / window.innerHeight,
-          left: (left * 100) / window.innerWidth,
-        },
-        top,
-        left,
-        translateX,
-        translateY,
-      });
-
-      this.setState({ circles: newCircles });
+      this.transformActiveCircle(pageX, pageY);
     }
   }
 
   onMouseDown = (event) => {
-    if (!_.includes(event.target.classList, 'circle')) this.setState({ activeCircle: null })
+    if (!_.includes(event.target.classList, 'circle')) {
+      this.setState({ activeCircle: null });
+    }
+  }
+
+  throttledMouseMove = (event) => {
+    event.persist();
+    _.throttle(this.onMouseMove.bind(this, event), 20)();
+  }
+
+  onMouseUp = (event) => {
+    if (this.state.activeCircle && event.timeStamp - this.state.activeCircle.activeAt > 200) {
+      this.setState({ activeCircle: null });
+    } else {
+      this.makeCircle(event);
+      this.setState({ activeCircle: null });
+    };
   }
 
   render() {
     return (
       <div id="content" className="content"
-      onMouseMove={ (event) => {
-        event.persist();
-        _.throttle(this.onMouseMove.bind(this, event), 10)();
-      } }
+      onMouseMove={ this.throttledMouseMove }
       onMouseDown={ this.onMouseDown }
-      onMouseUp={ (event) => {
-        if (this.state.activeCircle && event.timeStamp - this.state.activeCircle.activeAt > 200) {
-          this.setState({ activeCircle: null });
-        } else {
-          this.makeCircle(event);
-          this.setState({ activeCircle: null });
-        };
-      } }
+      onMouseUp={ this.onMouseUp }
       >
-        <Stars />
-        <Stars />
-        <Stars />
 
         <div className="content__overlay"></div>
-
-        <CSSTransitionGroup
-        transitionName="star"
-        transitionEnterTimeout={1000}
-        transitionLeaveTimeout={2000}>
-          { this.state.showDiv ? <div>Hey</div> : null }
-        </CSSTransitionGroup>
 
         <CSSTransitionGroup
         transitionName="example"
@@ -225,16 +223,6 @@ class App extends Component {
                 position: 'absolute',
                 zIndex: 1,
               }}>
-                {
-                  index === 5 ?
-                    <span key={ index }>
-                      <Stars />
-                      <Stars />
-                      <Stars />
-                    </span> :
-                    null
-                }
-
                 <div className="circle"
                 id={ circle.id }
                 onMouseDown={ (event) => {
@@ -250,8 +238,6 @@ class App extends Component {
                     x: pageX - translateX - activeCircleCentreCoordinates.x,
                     y: pageY - translateY - activeCircleCentreCoordinates.y,
                   }
-
-                  console.log('pointerDistanceFromCircleCentre', pointerDistanceFromCircleCentre);
 
                   this.setState({
                     activeCircle: {
@@ -269,12 +255,24 @@ class App extends Component {
                   width: circle.width,
                   height: circle.height,
                 } }>
-                  {/* <div style={{background: 'white', flex: '1 1 auto', fontSize: '15px', fontWeight: 'bold'}}>{circle.id}</div> */}
+                  {/* <div style={{background: 'white', flex: '1 1 auto', fontSize: '15px', fontWeight: 'bold'}}>
+                    {circle.id}
+                    { 1 - (index) / 10 }
+                  </div> */}
+
+                  {/* <div className="circle__inner" style={ {
+                    opacity: ((11 - index) / 10) / 4,
+                    background: '#A1FFFC',
+                  } } /> */}
                 </div>
               </div>
             );
           }) }
         </CSSTransitionGroup>
+
+        <Stars key={ 1 } />
+        <Stars key={ 2 } />
+        <Stars key={ 3 } />
       </div>
     );
   }

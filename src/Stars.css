@@ -1,6 +1,10 @@
 .star {
   position: absolute;
   opacity: 1;
+  /*mix-blend-mode: overlay;*/
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
 }
 
 .star-enter {
