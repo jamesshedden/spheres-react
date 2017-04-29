@@ -4,10 +4,7 @@ import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup';
 import Stars from './Stars';
 import './App.css';
 
-let SPHERE_COUNTER = 0;
-let STAR_COUNTER = 0;
 const MAX_CIRCLE_AMOUNT = 10;
-const MAX_STARS_AMOUNT = 10;
 const PARALLAX_AMOUNT_DIVISOR = 80;
 
 const COLORS = ['#FF9E9E', '#9EFFC6', '#9EEFFF', '#D8CEFF', '#B6FF9E'];
@@ -26,25 +23,12 @@ class App extends Component {
       stars: [],
       showDiv: false,
       circleElements: [],
+      sphereCount: 0,
     };
   }
 
   componentDidMount() {
     window.addEventListener("resize", this.throttledWindowResize); // TODO: remove event listener on unmount
-  }
-
-  addStar = () => {
-    let { stars } = this.state;
-
-    stars.push({
-      id: STAR_COUNTER,
-      top: this.randomNumber(0, window.innerHeight),
-      left: this.randomNumber(0, window.innerWidth),
-    });
-
-    let newStars = stars.length > MAX_STARS_AMOUNT ? stars.slice(1, stars.length) : stars;
-    this.setState({ stars: newStars });
-    STAR_COUNTER++;
   }
 
   throttledWindowResize = () => {
@@ -71,13 +55,22 @@ class App extends Component {
     };
   }
 
-  getTranslateAmountsFromCoordinates = (coordinates, multiplierFromZero, divisor) => {
-    const MULTIPLIER_BUFFER = 2;
+  roundToTwo = (input) => _.round(input, 2);
+
+  getTranslateAmountsFromCoordinates = (coordinates, multiplierFromZero, divisor, log) => {
     // multiplier comes from the counter, or the array index of a circle element, so
     // will sometimes be 0 or 1 but we don't want to multiply by these
+    const MULTIPLIER_BUFFER = 2;
 
-    const translateX = (coordinates.x * (multiplierFromZero + MULTIPLIER_BUFFER)) / divisor;
-    const translateY = (coordinates.y * (multiplierFromZero + MULTIPLIER_BUFFER)) / divisor;
+    const multiplier = multiplierFromZero + MULTIPLIER_BUFFER
+
+    const translateX = this.roundToTwo(
+      (coordinates.x * (multiplier)) / divisor
+    )
+
+    const translateY = this.roundToTwo(
+      (coordinates.y * (multiplier)) / divisor
+    )
 
     return {
       translateX,
@@ -87,12 +80,15 @@ class App extends Component {
 
   makeCircle = (event) => {
     const randomDimension = this.randomNumber(100, 250);
-    const multiplierForTranslateAmounts = SPHERE_COUNTER > MAX_CIRCLE_AMOUNT ? MAX_CIRCLE_AMOUNT : SPHERE_COUNTER;
+
+    const multiplierForTranslateAmounts = this.state.sphereCount > MAX_CIRCLE_AMOUNT ?
+      MAX_CIRCLE_AMOUNT : this.state.sphereCount;
 
     const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
       this.getPointerCoordinatesFromCentre(event.pageX, event.pageY),
       multiplierForTranslateAmounts,
-      PARALLAX_AMOUNT_DIVISOR
+      PARALLAX_AMOUNT_DIVISOR,
+      'makeCircle'
     );
 
     let background = `
@@ -100,11 +96,12 @@ class App extends Component {
     `;
 
     let circles = this.state.circles;
+
     let top = event.pageY - translateY - (randomDimension / 2);
     let left = event.pageX - translateX - (randomDimension / 2);
 
     circles.push({
-      id: SPHERE_COUNTER,
+      id: this.state.sphereCount,
       background,
       width: randomDimension,
       height: randomDimension,
@@ -118,50 +115,72 @@ class App extends Component {
       translateY,
     });
 
-    let newCircles = circles.length > MAX_CIRCLE_AMOUNT ? circles.slice(1, circles.length) : circles;
+    const circleElements = document.getElementsByClassName('circle');
+
     this.setState({
-      circles: newCircles,
-      circleElements: document.getElementsByClassName('circle'),
+      circles: circles.length > MAX_CIRCLE_AMOUNT ? circles.slice(1, circles.length) : circles,
+      circleElements,
+      sphereCount: this.state.sphereCount + 1,
     });
-    // this.setState({ circleElements: document.getElementsByClassName('circle') });
-    SPHERE_COUNTER++;
   };
 
   transformCircles = (circles, x, y) => {
-    _.map(circles, (circle, index) => {
+    _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
         this.getPointerCoordinatesFromCentre(x, y),
         index,
-        PARALLAX_AMOUNT_DIVISOR
+        PARALLAX_AMOUNT_DIVISOR,
+        'transformCircles()',
       );
 
       circle.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`;
     });
   }
 
-  transformActiveCircle = (pageX, pageY) => {
-    const multiplierForTranslateAmounts =
-      this.state.activeCircle.id > MAX_CIRCLE_AMOUNT ?
-        MAX_CIRCLE_AMOUNT : this.state.activeCircle.id;
+  sphereDrag = (pageX, pageY, width) => {
+    let multiplierForTranslateAmounts =
+      this.state.activeCircle.id > MAX_CIRCLE_AMOUNT - 1 ?
+        MAX_CIRCLE_AMOUNT - (this.state.sphereCount - this.state.activeCircle.id) : this.state.activeCircle.id - this.state.circles[0].id;
 
     const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
       this.getPointerCoordinatesFromCentre(pageX, pageY),
       multiplierForTranslateAmounts,
-      PARALLAX_AMOUNT_DIVISOR
+      PARALLAX_AMOUNT_DIVISOR,
+      'sphereDrag()',
     );
 
-    let newCircles = this.state.circles;
-    let activeCircleIndex = _.findIndex(newCircles, { id: this.state.activeCircle.id });
-    const { pointerDistanceFromCircleCentre } = this.state.activeCircle;
+    let { top, left } = this.getPosition(
+      pageX,
+      pageY,
+      translateX,
+      translateY,
+      width
+    );
 
-    // Below is suffering a bit from parallax stuff — circles near the edge of the screen jump more when dragged
-    let top = pageY - translateY - (newCircles[activeCircleIndex].height / 2) - pointerDistanceFromCircleCentre.y;
-    let left = pageX - translateX - (newCircles[activeCircleIndex].width / 2) - pointerDistanceFromCircleCentre.x;
+    return {
+      top,
+      left,
+      translateX,
+      translateY
+    }
+  }
+
+  transformActiveCircle = (pageX, pageY) => {
+    let activeCircleIndex = _.findIndex(this.state.circles, { id: this.state.activeCircle.id });
+
+    const {
+      top,
+      left,
+      translateX,
+      translateY,
+    } = this.sphereDrag(pageX, pageY, this.state.circles[activeCircleIndex].width);
 
     let distanceAsPercent = {
       top: (top * 100) / window.innerHeight,
       left: (left * 100) / window.innerWidth,
     };
+
+    let newCircles = this.state.circles;
 
     newCircles[activeCircleIndex] = _.assign({}, newCircles[activeCircleIndex], {
       distanceAsPercent,
@@ -174,24 +193,34 @@ class App extends Component {
     this.setState({ circles: newCircles });
   }
 
-  moveActiveCircle = (element, pageX, pageY) => {
-    const multiplierForTranslateAmounts =
-      this.state.activeCircle.id > MAX_CIRCLE_AMOUNT ?
-        MAX_CIRCLE_AMOUNT : this.state.activeCircle.id;
-
-    const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
-      this.getPointerCoordinatesFromCentre(pageX, pageY),
-      multiplierForTranslateAmounts,
-      PARALLAX_AMOUNT_DIVISOR
-    );
-
+  getPosition = (pageX, pageY, translateX, translateY, dimension) => {
     const { pointerDistanceFromCircleCentre } = this.state.activeCircle;
 
-    let top = pageY - translateY - (element.offsetHeight / 2) - pointerDistanceFromCircleCentre.y;
-    let left = pageX - translateX - (element.offsetWidth / 2) - pointerDistanceFromCircleCentre.x;
+    const top = this.roundToTwo(
+      pageY - translateY - (dimension / 2) - pointerDistanceFromCircleCentre.y
+    );
+
+    const left = this.roundToTwo(
+      pageX - translateX - (dimension / 2) - pointerDistanceFromCircleCentre.x
+    );
+
+    return {
+      top,
+      left,
+    };
+  }
+
+  moveActiveCircle = (element, pageX, pageY) => {
+    const {
+      top,
+      left,
+      translateX,
+      translateY,
+    } = this.sphereDrag(pageX, pageY, element.offsetWidth);
 
     element.style.top = `${ top }px`;
     element.style.left = `${ left }px`;
+    element.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`
   }
 
   onMouseMove = (event) => {
@@ -278,7 +307,6 @@ class App extends Component {
               } }>
                 {/* <div style={{background: 'white', flex: '1 1 auto', fontSize: '15px', fontWeight: 'bold'}}>
                   {circle.id}
-                  { 1 - (index) / 10 }
                 </div> */}
 
                 {/* <div className="circle__inner" style={ {
