@@ -4,8 +4,8 @@ import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup';
 import './Stars.css';
 
 let STAR_COUNTER = 0;
-const MAX_STARS_AMOUNT = 4;
-const STAR_SHOW_INTERVAL = 2000;
+const MAX_STARS_AMOUNT = 5;
+const STAR_SHOW_INTERVAL = 500;
 const BACKGROUND_STARS_TOTAL = 30;
 const COLORS = ['#FF9E9E', '#9EFFC6', '#9EEFFF', '#D8CEFF', '#B6FF9E'];
 

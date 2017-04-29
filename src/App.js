@@ -57,7 +57,7 @@ class App extends Component {
 
   roundToTwo = (input) => _.round(input, 2);
 
-  getTranslateAmountsFromCoordinates = (coordinates, multiplierFromZero, divisor, log) => {
+  getTranslateAmountsFromCoordinates = (coordinates, multiplierFromZero, divisor) => {
     // multiplier comes from the counter, or the array index of a circle element, so
     // will sometimes be 0 or 1 but we don't want to multiply by these
     const MULTIPLIER_BUFFER = 2;
@@ -88,7 +88,6 @@ class App extends Component {
       this.getPointerCoordinatesFromCentre(event.pageX, event.pageY),
       multiplierForTranslateAmounts,
       PARALLAX_AMOUNT_DIVISOR,
-      'makeCircle'
     );
 
     let background = `
@@ -115,10 +114,18 @@ class App extends Component {
       translateY,
     });
 
+    circles = circles.length > MAX_CIRCLE_AMOUNT ? circles.slice(1, circles.length) : circles;
+
+    const arrayOfIndexes = _.map([...Array(circles.length)], (_, index) => {
+      return { index };
+    });
+
+    const newCircles = _.merge([], circles, arrayOfIndexes);
+
     const circleElements = document.getElementsByClassName('circle');
 
     this.setState({
-      circles: circles.length > MAX_CIRCLE_AMOUNT ? circles.slice(1, circles.length) : circles,
+      circles: newCircles,
       circleElements,
       sphereCount: this.state.sphereCount + 1,
     });
@@ -130,7 +137,6 @@ class App extends Component {
         this.getPointerCoordinatesFromCentre(x, y),
         index,
         PARALLAX_AMOUNT_DIVISOR,
-        'transformCircles()',
       );
 
       circle.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`;
@@ -138,15 +144,10 @@ class App extends Component {
   }
 
   sphereDrag = (pageX, pageY, width) => {
-    let multiplierForTranslateAmounts =
-      this.state.activeCircle.id > MAX_CIRCLE_AMOUNT - 1 ?
-        MAX_CIRCLE_AMOUNT - (this.state.sphereCount - this.state.activeCircle.id) : this.state.activeCircle.id - this.state.circles[0].id;
-
     const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
       this.getPointerCoordinatesFromCentre(pageX, pageY),
-      multiplierForTranslateAmounts,
+      this.state.activeCircle.index,
       PARALLAX_AMOUNT_DIVISOR,
-      'sphereDrag()',
     );
 
     let { top, left } = this.getPosition(
@@ -276,11 +277,21 @@ class App extends Component {
               key={ circle.id }
               onMouseDown={ (event) => {
                 const { pageX, pageY } = event;
-                const { translateX, translateY } = circle;
+
+                const {
+                  translateX,
+                  translateY,
+                  id,
+                  index,
+                  left,
+                  top,
+                  width,
+                  height,
+                } = circle;
 
                 let activeCircleCentreCoordinates = {
-                  x: circle.left + (circle.width / 2),
-                  y: circle.top + (circle.height / 2),
+                  x: left + (width / 2),
+                  y: top + (height / 2),
                 }
 
                 let pointerDistanceFromCircleCentre = {
@@ -290,7 +301,8 @@ class App extends Component {
 
                 this.setState({
                   activeCircle: {
-                    id: circle.id,
+                    id,
+                    index,
                     element: event.target,
                     activeAt: event.timeStamp,
                     pointerDistanceFromCircleCentre,
