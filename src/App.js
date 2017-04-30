@@ -7,7 +7,7 @@ import './App.css';
 const MAX_CIRCLE_AMOUNT = 10;
 const PARALLAX_AMOUNT_DIVISOR = 80;
 
-const COLORS = ['#FF9E9E', '#9EFFC6', '#9EEFFF', '#D8CEFF', '#B6FF9E'];
+const COLORS = ['#FF5130', '#A496FF', '#5CFF80'];
 
 class App extends Component {
   constructor() {
@@ -15,8 +15,8 @@ class App extends Component {
 
     this.state = {
       circles: [],
-      backgroundColor1: 'FEB522',
-      backgroundColor2: 'A1FFFC',
+      backgroundColor1: '#FEB522',
+      backgroundColor2: '#370078',
       startedDraggingAt: 0,
       isDragging: false,
       activeCircle: null,
@@ -64,13 +64,8 @@ class App extends Component {
 
     const multiplier = multiplierFromZero + MULTIPLIER_BUFFER
 
-    const translateX = this.roundToTwo(
-      (coordinates.x * (multiplier)) / divisor
-    )
-
-    const translateY = this.roundToTwo(
-      (coordinates.y * (multiplier)) / divisor
-    )
+    const translateX = (coordinates.x * (multiplier)) / divisor;
+    const translateY = (coordinates.y * (multiplier)) / divisor;
 
     return {
       translateX,
@@ -88,8 +83,8 @@ class App extends Component {
       return {
         id: circle.id,
         totals: {
-          vertical: _.round(top + translateY, 2),
-          horizontal: _.round(left + translateX, 2),
+          vertical: top + translateY,
+          horizontal: left + translateX,
         }
       }
     });
@@ -125,6 +120,31 @@ class App extends Component {
     return circles;
   }
 
+  removeCircleSurplus = (circles) => {
+    if (circles.length > MAX_CIRCLE_AMOUNT) {
+      let circleToBeRemoved = document.getElementById(`circle-${ circles[0].id }`);
+      let cloned = circleToBeRemoved.cloneNode(true);
+      cloned.className = 'removed-circle';
+      cloned.id = '';
+
+      // debugger;
+      //
+      // newDiv.appendChild(cloned)
+      // // debugger;
+      //
+      // console.log('newDiv', newDiv);
+      document.body.appendChild(cloned);
+
+      setTimeout(() => {
+        document.body.removeChild(cloned);
+      }, 1000)
+
+      return circles.slice(1, circles.length);
+    } else {
+      return circles;
+    }
+  }
+
   makeCircle = (event) => {
     event.persist();
     let { pageX, pageY } = event;
@@ -140,9 +160,7 @@ class App extends Component {
       PARALLAX_AMOUNT_DIVISOR,
     );
 
-    let background = `
-      linear-gradient(45deg, #523191 0%, ${ COLORS[this.randomNumber(0, COLORS.length)] } 100%)
-    `;
+    let color = COLORS[this.randomNumber(0, COLORS.length)];
 
     let circles = this.state.circles;
 
@@ -155,7 +173,7 @@ class App extends Component {
 
     circles.push({
       id: this.state.sphereCount,
-      background,
+      color,
       width: randomDimension,
       height: randomDimension,
       distanceAsPercent: {
@@ -168,7 +186,7 @@ class App extends Component {
       translateY,
     });
 
-    circles = circles.length > MAX_CIRCLE_AMOUNT ? circles.slice(1, circles.length) : circles;
+    circles = this.removeCircleSurplus(circles);
 
     const arrayOfIndexes = _.map([...Array(circles.length)], (_, index) => {
       return { index };
@@ -263,13 +281,8 @@ class App extends Component {
   getPosition = (pageX, pageY, translateX, translateY, dimension) => {
     const { pointerDistanceFromCircleCentre } = this.state.activeCircle;
 
-    const top = this.roundToTwo(
-      pageY - translateY - (dimension / 2) - pointerDistanceFromCircleCentre.y
-    );
-
-    const left = this.roundToTwo(
-      pageX - translateX - (dimension / 2) - pointerDistanceFromCircleCentre.x
-    );
+    const top = pageY - translateY - (dimension / 2) - pointerDistanceFromCircleCentre.y;
+    const left = pageX - translateX - (dimension / 2) - pointerDistanceFromCircleCentre.x;
 
     return {
       top,
@@ -375,7 +388,13 @@ class App extends Component {
                 });
               }}
               style={ {
-                background: circle.background,
+                background: `
+                  linear-gradient(
+                    45deg,
+                    ${ this.state.backgroundColor2 } 0%,
+                    ${ circle.color } 100%
+                  )
+                `,
                 transform: `translateX(${ circle.translateX }px) translateY(${ circle.translateY }px)`,
                 top: `${ circle.top }px`,
                 left: `${ circle.left }px`,
@@ -387,8 +406,13 @@ class App extends Component {
                 </div> */}
 
                 {/* <div className="circle__inner" style={ {
-                  opacity: ((11 - index) / 10) / 4,
-                  background: '#A1FFFC',
+                  background: `
+                    linear-gradient(
+                      45deg,
+                      ${ this.state.backgroundColor2 } 0%,
+                      ${ circle.color } 100%
+                    )
+                  `,
                 } } /> */}
               </div>
             );
@@ -399,6 +423,7 @@ class App extends Component {
         <Stars key={ 2 } />
         <Stars key={ 3 } />
         <Stars key={ 4 } />
+        <Stars key={ 5 } />
       </div>
     );
   }
