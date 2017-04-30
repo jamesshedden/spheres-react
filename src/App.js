@@ -114,8 +114,6 @@ class App extends Component {
       }
     });
 
-    // debugger;
-
     circles = _.merge([], circles, repositionedCircles);
     return circles;
   }
@@ -123,16 +121,10 @@ class App extends Component {
   removeCircleSurplus = (circles) => {
     if (circles.length > MAX_CIRCLE_AMOUNT) {
       let circleToBeRemoved = document.getElementById(`circle-${ circles[0].id }`);
+
       let cloned = circleToBeRemoved.cloneNode(true);
       cloned.className = 'removed-circle';
       cloned.id = '';
-
-      // debugger;
-      //
-      // newDiv.appendChild(cloned)
-      // // debugger;
-      //
-      // console.log('newDiv', newDiv);
       document.body.appendChild(cloned);
 
       setTimeout(() => {
@@ -343,10 +335,22 @@ class App extends Component {
       onMouseDown={ this.onMouseDown }
       onMouseUp={ this.onMouseUp }
       >
+        <div style={ {
+          width: '0px',
+          height: '0px',
+          overflow: 'hidden',
+          position: 'absolute',
+          top: '-9999px',
+          left: '-9999px',
+          background: `
+            url('/dots-dark.png'),
+            url('/dots-light.png')
+          `
+        } }/>
         <div className="content__overlay"></div>
 
         <CSSTransitionGroup
-        transitionName="example"
+        transitionName="circle"
         transitionEnterTimeout={200}
         transitionLeaveTimeout={1}>
           { this.state.circles.map((circle, index) => {

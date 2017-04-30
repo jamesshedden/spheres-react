@@ -94,20 +94,20 @@
   pointer-events: none;
 }*/
 
-.example-enter {
+.circle-enter {
   opacity: 0;
 }
 
-.example-enter.example-enter-active {
+.circle-enter.circle-enter-active {
   opacity: 1;
   transition: opacity 0.2s ease;
 }
 
-.example-leave {
+.circle-leave {
   opacity: 1;
 }
 
-.example-leave.example-leave-active {
+.circle-leave.circle-leave-active {
   opacity: 0;
   transition: opacity 1s ease;
 }
