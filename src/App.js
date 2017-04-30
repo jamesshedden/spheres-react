@@ -138,7 +138,12 @@ class App extends Component {
   }
 
   makeCircle = (event) => {
-    event.persist();
+    if (event.type === 'touchend') {
+      event = event.nativeEvent;
+    } else {
+      event.persist();
+    }
+
     let { pageX, pageY } = event;
 
     const randomDimension = this.randomNumber(100, 250);
@@ -296,6 +301,7 @@ class App extends Component {
   }
 
   onMouseMove = (event) => {
+    console.log('onMouseMove()');
     const { pageX, pageY } = event;
 
     if (this.state.circleElements.length) {
@@ -314,7 +320,12 @@ class App extends Component {
   }
 
   throttledMouseMove = (event) => {
-    event.persist();
+    if (event.type === 'touchend') {
+      event = event.nativeEvent;
+    } else {
+      event.persist();
+    }
+
     _.throttle(this.onMouseMove.bind(this, event), 20)();
   }
 
@@ -328,12 +339,53 @@ class App extends Component {
     };
   }
 
+  onCircleMouseDown = (event, circle) => {
+    if (event.type === 'touchend') {
+      event = event.nativeEvent;
+    }
+
+    const { pageX, pageY } = event;
+
+    const {
+      id,
+      left,
+      top,
+      width,
+      height,
+    } = circle;
+
+    let { transform } = event.target.style;
+    let { translateX, translateY } = this.returnTransformValuesAsNumbers(transform);
+
+    let activeCircleCentreCoordinates = {
+      x: left + (width / 2),
+      y: top + (height / 2),
+    }
+
+    let pointerDistanceFromCircleCentre = {
+      x: pageX - translateX - activeCircleCentreCoordinates.x,
+      y: pageY - translateY - activeCircleCentreCoordinates.y,
+    }
+
+    this.setState({
+      activeCircle: {
+        id,
+        element: event.target,
+        activeAt: event.timeStamp,
+        pointerDistanceFromCircleCentre,
+      },
+    });
+  }
+
   render() {
     return (
       <div id="content" className="content"
       onMouseMove={ this.throttledMouseMove }
+      onTouchMove={ this.throttledMouseMove }
       onMouseDown={ this.onMouseDown }
+      onTouchStart={ this.onMouseDown }
       onMouseUp={ this.onMouseUp }
+      onTouchEnd={ this.onMouseUp }
       >
         <div style={ {
           width: '0px',
@@ -359,38 +411,11 @@ class App extends Component {
               id={ `circle-${ circle.id }` }
               key={ circle.id }
               onMouseDown={ (event) => {
-                const { pageX, pageY } = event;
-
-                const {
-                  id,
-                  left,
-                  top,
-                  width,
-                  height,
-                } = circle;
-
-                let { transform } = event.target.style;
-                let { translateX, translateY } = this.returnTransformValuesAsNumbers(transform);
-
-                let activeCircleCentreCoordinates = {
-                  x: left + (width / 2),
-                  y: top + (height / 2),
-                }
-
-                let pointerDistanceFromCircleCentre = {
-                  x: pageX - translateX - activeCircleCentreCoordinates.x,
-                  y: pageY - translateY - activeCircleCentreCoordinates.y,
-                }
-
-                this.setState({
-                  activeCircle: {
-                    id,
-                    element: event.target,
-                    activeAt: event.timeStamp,
-                    pointerDistanceFromCircleCentre,
-                  },
-                });
-              }}
+                this.onCircleMouseDown(event, circle)
+              } }
+              onTouchStart={ (event) => {
+                this.onCircleMouseDown(event, circle)
+              } }
               style={ {
                 background: `
                   linear-gradient(

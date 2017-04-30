@@ -55,6 +55,8 @@
 .removed-circle:before {
   content: '';
   display: block;
+  top: 0;
+  left: 0;
   position: absolute;
   height: 100%;
   width: 100%;
@@ -67,6 +69,8 @@
   content: '';
   display: block;
   position: absolute;
+  top: 0;
+  left: 0;
   height: 100%;
   width: 100%;
   background: url('/dots-dark.png');
