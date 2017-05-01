@@ -396,7 +396,7 @@ class App extends Component {
           top: '-9999px',
           left: '-9999px',
           background: `
-            url('/dots-texture-dark.png')
+            url('/dots-texture-dark.jpg')
           `
         } }/>
       );
