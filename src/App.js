@@ -305,7 +305,6 @@ class App extends Component {
   }
 
   onMouseMove = (event) => {
-    console.log('onMouseMove()');
     const { pageX, pageY } = event;
 
     if (this.state.circleElements.length) {
@@ -344,7 +343,6 @@ class App extends Component {
   }
 
   onCircleMouseDown = (event, circle) => {
-    console.log('event, circle', event, circle);
     if (event.type === 'touchend') {
       event = event.nativeEvent;
     }
