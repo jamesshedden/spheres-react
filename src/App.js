@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
+import classNames from 'classnames';
 import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup';
 import Stars from './Stars';
 import './App.css';
@@ -8,6 +9,7 @@ const MAX_CIRCLE_AMOUNT = 10;
 const PARALLAX_AMOUNT_DIVISOR = 80;
 
 const COLORS = ['#FF5130', '#A496FF', '#5CFF80'];
+const SIZES = ['xsmall', 'small', 'medium', 'large', 'xlarge'];
 
 class App extends Component {
   constructor() {
@@ -123,7 +125,8 @@ class App extends Component {
       let circleToBeRemoved = document.getElementById(`circle-${ circles[0].id }`);
 
       let cloned = circleToBeRemoved.cloneNode(true);
-      cloned.className = 'removed-circle';
+      cloned.classList.remove('circle');
+      cloned.classList.add('removed-circle');
       cloned.id = '';
       document.body.appendChild(cloned);
 
@@ -146,7 +149,7 @@ class App extends Component {
 
     let { pageX, pageY } = event;
 
-    const randomDimension = this.randomNumber(100, 250);
+    // const randomDimension = this.randomNumber(100, 250);
 
     const multiplierForTranslateAmounts = this.state.sphereCount > MAX_CIRCLE_AMOUNT ?
       MAX_CIRCLE_AMOUNT - 1 : this.state.sphereCount;
@@ -158,11 +161,12 @@ class App extends Component {
     );
 
     let color = COLORS[this.randomNumber(0, COLORS.length)];
+    let size = SIZES[this.randomNumber(0, SIZES.length)];
 
     let circles = this.state.circles;
 
-    let top = pageY - translateY - (randomDimension / 2);
-    let left = pageX - translateX - (randomDimension / 2);
+    let top = pageY - translateY;
+    let left = pageX - translateX;
 
     if (this.state.sphereCount >= MAX_CIRCLE_AMOUNT) {
       circles = this.repositionCircles(circles, pageX, pageY);
@@ -171,8 +175,9 @@ class App extends Component {
     circles.push({
       id: this.state.sphereCount,
       color,
-      width: randomDimension,
-      height: randomDimension,
+      size,
+      // width: randomDimension,
+      // height: randomDimension,
       distanceAsPercent: {
         top: (top * 100) / window.innerHeight,
         left: (left * 100) / window.innerWidth,
@@ -255,7 +260,7 @@ class App extends Component {
       left,
       translateX,
       translateY,
-    } = this.sphereDrag(pageX, pageY, this.state.circles[activeCircleIndex].width);
+    } = this.sphereDrag(pageX, pageY, this.state.activeCircle.element.offsetWidth);
 
     let distanceAsPercent = {
       top: (top * 100) / window.innerHeight,
@@ -278,8 +283,8 @@ class App extends Component {
   getPosition = (pageX, pageY, translateX, translateY, dimension) => {
     const { pointerDistanceFromCircleCentre } = this.state.activeCircle;
 
-    const top = pageY - translateY - (dimension / 2) - pointerDistanceFromCircleCentre.y;
-    const left = pageX - translateX - (dimension / 2) - pointerDistanceFromCircleCentre.x;
+    const top = pageY - translateY - pointerDistanceFromCircleCentre.y;
+    const left = pageX - translateX - pointerDistanceFromCircleCentre.x;
 
     return {
       top,
@@ -340,6 +345,7 @@ class App extends Component {
   }
 
   onCircleMouseDown = (event, circle) => {
+    console.log('event, circle', event, circle);
     if (event.type === 'touchend') {
       event = event.nativeEvent;
     }
@@ -350,21 +356,14 @@ class App extends Component {
       id,
       left,
       top,
-      width,
-      height,
     } = circle;
 
     let { transform } = event.target.style;
     let { translateX, translateY } = this.returnTransformValuesAsNumbers(transform);
 
-    let activeCircleCentreCoordinates = {
-      x: left + (width / 2),
-      y: top + (height / 2),
-    }
-
     let pointerDistanceFromCircleCentre = {
-      x: pageX - translateX - activeCircleCentreCoordinates.x,
-      y: pageY - translateY - activeCircleCentreCoordinates.y,
+      x: pageX - translateX - left,
+      y: pageY - translateY - top,
     }
 
     this.setState({
@@ -378,15 +377,18 @@ class App extends Component {
   }
 
   render() {
-    return (
-      <div id="content" className="content"
-      onMouseMove={ this.throttledMouseMove }
-      onTouchMove={ this.throttledMouseMove }
-      onMouseDown={ this.onMouseDown }
-      onTouchStart={ this.onMouseDown }
-      onMouseUp={ this.onMouseUp }
-      onTouchEnd={ this.onMouseUp }
-      >
+    const circleClassNames = (size) => {
+      return classNames('circle', {
+        'size-small': size === 'small',
+        'size-xsmall': size === 'xsmall',
+        'size-medium': size === 'medium',
+        'size-large': size === 'large',
+        'size-xlarge': size === 'xlarge',
+      });
+    }
+
+    const ImagePreloader = () => {
+      return (
         <div style={ {
           width: '0px',
           height: '0px',
@@ -399,7 +401,19 @@ class App extends Component {
             url('/dots-light.png')
           `
         } }/>
-        <div className="content__overlay"></div>
+      );
+    }
+    return (
+      <div id="content" className="content"
+      onMouseMove={ this.throttledMouseMove }
+      onTouchMove={ this.throttledMouseMove }
+      onMouseDown={ this.onMouseDown }
+      onTouchStart={ this.onMouseDown }
+      onMouseUp={ this.onMouseUp }
+      onTouchEnd={ this.onMouseUp }
+      >
+        <ImagePreloader />
+        <div className="content__overlay" />
 
         <CSSTransitionGroup
         transitionName="circle"
@@ -407,15 +421,11 @@ class App extends Component {
         transitionLeaveTimeout={1}>
           { this.state.circles.map((circle, index) => {
             return (
-              <div className="circle"
+              <div className={ circleClassNames(circle.size) }
               id={ `circle-${ circle.id }` }
               key={ circle.id }
-              onMouseDown={ (event) => {
-                this.onCircleMouseDown(event, circle)
-              } }
-              onTouchStart={ (event) => {
-                this.onCircleMouseDown(event, circle)
-              } }
+              onMouseDown={ (event) => this.onCircleMouseDown(event, circle) }
+              onTouchStart={ (event) => this.onCircleMouseDown(event, circle) }
               style={ {
                 background: `
                   linear-gradient(
@@ -433,16 +443,6 @@ class App extends Component {
                 {/* <div style={{background: 'white', flex: '1 1 auto', fontSize: '15px', fontWeight: 'bold'}}>
                   {circle.id}
                 </div> */}
-
-                {/* <div className="circle__inner" style={ {
-                  background: `
-                    linear-gradient(
-                      45deg,
-                      ${ this.state.backgroundColor2 } 0%,
-                      ${ circle.color } 100%
-                    )
-                  `,
-                } } /> */}
               </div>
             );
           }) }
