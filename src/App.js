@@ -450,8 +450,6 @@ class App extends Component {
         <Stars key={ 1 } />
         <Stars key={ 2 } />
         <Stars key={ 3 } />
-        <Stars key={ 4 } />
-        <Stars key={ 5 } />
       </div>
     );
   }
