@@ -21,11 +21,12 @@
   height: 100%;
   width: 100%;
   position: absolute;
-  background: url('/texture3.jpg');
-  opacity: 0.15;
+  background: url('/dots-texture-light.jpg');
+  background-size: 700px auto;
+  opacity: 0.2;
 }
 
-.content:after {
+/*.content:after {
   content: '';
   height: 100%;
   width: 100%;
@@ -33,7 +34,7 @@
   background: url('/dots-light.png');
   background-size: 800px auto;
   opacity: 0.4;
-}
+}*/
 
 .circle,
 .removed-circle {
@@ -80,6 +81,20 @@
   margin-top: -126px;
 }
 
+.size-xxlarge {
+  width: 290px;
+  height: 290px;
+  margin-left: -145px;
+  margin-top: -145px;
+}
+
+.size-xxxlarge {
+  width: 328px;
+  height: 328px;
+  margin-left: -164px;
+  margin-top: -164px;
+}
+
 @media (max-width: 800px) {
   .size-xsmall {
     width: 74px;
@@ -114,6 +129,20 @@
     height: 168px;
     margin-left: -84px;
     margin-top: -84px;
+  }
+
+  .size-xxlarge {
+    width: 194px;
+    height: 194px;
+    margin-left: -97px;
+    margin-top: -97px;
+  }
+
+  .size-xxxlarge {
+    width: 218px;
+    height: 218px;
+    margin-left: -109px;
+    margin-top: -109px;
   }
 }
 
@@ -151,6 +180,20 @@
     height: 126px;
     margin-left: -63px;
     margin-top: -63px;
+  }
+
+  .size-xxlarge {
+    width: 146px;
+    height: 146px;
+    margin-left: -73px;
+    margin-top: -73px;
+  }
+
+  .size-xxxlarge {
+    width: 164px;
+    height: 164px;
+    margin-left: -82px;
+    margin-top: -82px;
   }
 }
 
@@ -206,12 +249,13 @@
   position: absolute;
   height: 100%;
   width: 100%;
-  background: url('/texture3.jpg');
+  background: url('/dots-texture-dark.jpg');
+  background-size: 700px auto;
   opacity: 0.2;
   border-radius: 50%;
 }
 
-.circle:after {
+/*.circle:after {
   content: '';
   display: block;
   position: absolute;
@@ -223,7 +267,7 @@
   background-size: 800px auto;
   opacity: 0.3;
   border-radius: 50%;
-}
+}*/
 
 .circle__inner {
   width: 100%;

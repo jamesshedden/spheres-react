@@ -9,7 +9,7 @@ const MAX_CIRCLE_AMOUNT = 10;
 const PARALLAX_AMOUNT_DIVISOR = 80;
 
 const COLORS = ['#FF5130', '#A496FF', '#5CFF80'];
-const SIZES = ['xsmall', 'small', 'medium', 'large', 'xlarge'];
+const SIZES = ['xsmall', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge'];
 
 class App extends Component {
   constructor() {
@@ -227,7 +227,7 @@ class App extends Component {
     });
   }
 
-  sphereDrag = (pageX, pageY, width) => {
+  sphereDrag = (pageX, pageY) => {
     let activeCircleIndex = _.find(this.state.circles, { id: this.state.activeCircle.id }).index;
 
     const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
@@ -240,8 +240,7 @@ class App extends Component {
       pageX,
       pageY,
       translateX,
-      translateY,
-      width
+      translateY
     );
 
     return {
@@ -260,7 +259,7 @@ class App extends Component {
       left,
       translateX,
       translateY,
-    } = this.sphereDrag(pageX, pageY, this.state.activeCircle.element.offsetWidth);
+    } = this.sphereDrag(pageX, pageY);
 
     let distanceAsPercent = {
       top: (top * 100) / window.innerHeight,
@@ -280,7 +279,7 @@ class App extends Component {
     this.setState({ circles: newCircles });
   }
 
-  getPosition = (pageX, pageY, translateX, translateY, dimension) => {
+  getPosition = (pageX, pageY, translateX, translateY) => {
     const { pointerDistanceFromCircleCentre } = this.state.activeCircle;
 
     const top = pageY - translateY - pointerDistanceFromCircleCentre.y;
@@ -384,6 +383,8 @@ class App extends Component {
         'size-medium': size === 'medium',
         'size-large': size === 'large',
         'size-xlarge': size === 'xlarge',
+        'size-xxlarge': size === 'xxlarge',
+        'size-xxxlarge': size === 'xxxlarge',
       });
     }
 
