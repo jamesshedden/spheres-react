@@ -8,8 +8,60 @@ import './App.css';
 const MAX_CIRCLE_AMOUNT = 10;
 const PARALLAX_AMOUNT_DIVISOR = 80;
 
+const AVAILABLE_COLORS = [
+  {
+    label: 'Red',
+    hex: '#FF5130',
+  },
+  {
+    label: 'Orange',
+    hex: '#FEB422',
+  },
+  {
+    label: 'Yellow',
+    hex: '#FFDD30',
+  },
+  {
+    label: 'Green',
+    hex: '#5CFF80',
+  },
+  {
+    label: 'Light blue',
+    hex: '#A2FFFB',
+  },
+  {
+    label: 'Dark blue',
+    hex: '#4692FF',
+  },
+  {
+    label: 'Teal',
+    hex: '#9FFEC4',
+  },
+  {
+    label: 'Dark purple',
+    hex: '#370078',
+  },
+  {
+    label: 'Purple',
+    hex: '#A496FF',
+  },
+  {
+    label: 'Pink',
+    hex: '#F7A2E0',
+  },
+  {
+    label: 'Grey',
+    hex: '#3A3A3A',
+  },
+  {
+    label: 'Dark grey',
+    hex: '#B4B4B4',
+  },
+];
+
 const COLORS = ['#FF5130', '#A496FF', '#5CFF80'];
 const SIZES = ['xsmall', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge'];
+const ANGLES = ['0deg', '45deg', '90deg', '135deg', '180deg', '225deg', '270deg', '315deg', '360deg'];
 
 class App extends Component {
   constructor() {
@@ -17,8 +69,13 @@ class App extends Component {
 
     this.state = {
       circles: [],
-      backgroundColor1: '#FEB522',
+      backgroundColor1: '#FEB422',
       backgroundColor2: '#370078',
+      backgroundAngle: '45deg',
+      circleColor1: '#FF5130',
+      circleColor2: '#A496FF',
+      circleColor3: '#5CFF80',
+      circleAngle: '45deg',
       startedDraggingAt: 0,
       isDragging: false,
       activeCircle: null,
@@ -160,7 +217,8 @@ class App extends Component {
       PARALLAX_AMOUNT_DIVISOR,
     );
 
-    let color = COLORS[this.randomNumber(0, COLORS.length)];
+    // let color = COLORS[this.randomNumber(0, COLORS.length)];
+    let colorIndex = this.randomNumber(1, 3);
     let size = SIZES[this.randomNumber(0, SIZES.length)];
 
     let circles = this.state.circles;
@@ -174,7 +232,7 @@ class App extends Component {
 
     circles.push({
       id: this.state.sphereCount,
-      color,
+      colorIndex,
       size,
       // width: randomDimension,
       // height: randomDimension,
@@ -333,13 +391,16 @@ class App extends Component {
   }
 
   onMouseUp = (event) => {
-    if (this.state.activeCircle && event.timeStamp - this.state.activeCircle.activeAt > 200) {
-      this.transformActiveCircle(event.pageX, event.pageY);
-      this.setState({ activeCircle: null });
-    } else {
-      this.makeCircle(event);
-      this.setState({ activeCircle: null });
-    };
+    if (!_.includes(event.target.classList, 'no-circle')) {
+      if (this.state.activeCircle && event.timeStamp - this.state.activeCircle.activeAt > 200) {
+        this.transformActiveCircle(event.pageX, event.pageY);
+        this.state.activeCircle.element.classList.remove('is-active');
+        this.setState({ activeCircle: null });
+      } else {
+        this.makeCircle(event);
+        this.setState({ activeCircle: null });
+      };
+    }
   }
 
   onCircleMouseDown = (event, circle) => {
@@ -361,6 +422,10 @@ class App extends Component {
     let pointerDistanceFromCircleCentre = {
       x: pageX - translateX - left,
       y: pageY - translateY - top,
+    }
+
+    if (!event.target.classList.contains('is-active')) {
+      event.target.classList.add('is-active');
     }
 
     this.setState({
@@ -409,15 +474,183 @@ class App extends Component {
       onTouchStart={ this.onMouseDown }
       onMouseUp={ this.onMouseUp }
       onTouchEnd={ this.onMouseUp }
+      style={ {
+        height: '100%',
+        background: `
+          linear-gradient(
+            ${ this.state.backgroundAngle },
+            ${ this.state.backgroundColor1 } 0%,
+            ${ this.state.backgroundColor2 } 100%
+          )
+        `,
+        position: 'relative',
+        overflow: 'hidden',
+      } }
       >
+        <div className="menu no-circle">
+          <h1 className="no-circle">Background 1</h1>
+
+          {
+            AVAILABLE_COLORS.map((color) => {
+              return (
+                <div className="no-circle"
+                style={ {
+                  backgroundColor: color.hex,
+                  width: '25px',
+                  height: '25px',
+                  display: 'inline-block',
+                } }
+                onClick={ () => {
+                  this.setState({
+                    backgroundColor1: color.hex,
+                  });
+                } }>
+                </div>
+              );
+            })
+          }
+
+          <h1 className="no-circle">Background 2</h1>
+
+          {
+            AVAILABLE_COLORS.map((color) => {
+              return (
+                <div className="no-circle"
+                style={ {
+                  backgroundColor: color.hex,
+                  width: '25px',
+                  height: '25px',
+                  display: 'inline-block',
+                } }
+                onClick={ () => {
+                  this.setState({
+                    backgroundColor2: color.hex,
+                  });
+                } }>
+                </div>
+              );
+            })
+          }
+
+          <h1 className="no-circle">Background angle</h1>
+
+          {
+            ANGLES.map((angle) => {
+              return (
+                <div className="no-circle"
+                onClick={ () => {
+                  this.setState({
+                    backgroundAngle: angle,
+                  });
+                } }>
+                  { angle }
+                </div>
+              );
+            })
+          }
+
+          <h1 className="no-circle">Circle 1</h1>
+
+          {
+            AVAILABLE_COLORS.map((color) => {
+              return (
+                <div className="no-circle"
+                style={ {
+                  backgroundColor: color.hex,
+                  width: '25px',
+                  height: '25px',
+                  display: 'inline-block',
+                } }
+                onClick={ () => {
+                  this.setState({
+                    circleColor1: color.hex,
+                  });
+                } }>
+                </div>
+              );
+            })
+          }
+
+          <h1 className="no-circle">Circle 2</h1>
+
+          {
+            AVAILABLE_COLORS.map((color) => {
+              return (
+                <div className="no-circle"
+                style={ {
+                  backgroundColor: color.hex,
+                  width: '25px',
+                  height: '25px',
+                  display: 'inline-block',
+                } }
+                onClick={ () => {
+                  this.setState({
+                    circleColor2: color.hex,
+                  });
+                } }>
+                </div>
+              );
+            })
+          }
+
+          <h1 className="no-circle">Circle 3</h1>
+
+          {
+            AVAILABLE_COLORS.map((color) => {
+              return (
+                <div className="no-circle"
+                style={ {
+                  backgroundColor: color.hex,
+                  width: '25px',
+                  height: '25px',
+                  display: 'inline-block',
+                } }
+                onClick={ () => {
+                  this.setState({
+                    circleColor3: color.hex,
+                  });
+                } }>
+                </div>
+              );
+            })
+          }
+
+          <h1 className="no-circle">Circle angle</h1>
+
+          {
+            ANGLES.map((angle) => {
+              return (
+                <div className="no-circle"
+                onClick={ () => {
+                  this.setState({
+                    circleAngle: angle,
+                  });
+                } }>
+                  { angle }
+                </div>
+              );
+            })
+          }
+        </div>
+
         <ImagePreloader />
-        <div className="content__overlay" />
+        {/* <div className="content__overlay" /> */}
 
         <CSSTransitionGroup
         transitionName="circle"
         transitionEnterTimeout={200}
         transitionLeaveTimeout={1}>
           { this.state.circles.map((circle, index) => {
+
+            let color;
+            if (circle.colorIndex === 1) {
+              color = this.state.circleColor1;
+            } else if (circle.colorIndex === 2) {
+              color = this.state.circleColor2;
+            } else if (circle.colorIndex === 3) {
+              color = this.state.circleColor3;
+            }
+
             return (
               <div className={ circleClassNames(circle.size) }
               id={ `circle-${ circle.id }` }
@@ -427,9 +660,9 @@ class App extends Component {
               style={ {
                 background: `
                   linear-gradient(
-                    45deg,
+                    ${ this.state.circleAngle },
                     ${ this.state.backgroundColor2 } 0%,
-                    ${ circle.color } 100%
+                    ${ color } 100%
                   )
                 `,
                 transform: `translateX(${ circle.translateX }px) translateY(${ circle.translateY }px)`,
@@ -446,9 +679,18 @@ class App extends Component {
           }) }
         </CSSTransitionGroup>
 
-        <Stars key={ 1 } />
-        <Stars key={ 2 } />
-        <Stars key={ 3 } />
+        <Stars
+        colors={ [this.state.circleColor1, this.state.circleColor2, this.state.circleColor3] }
+        key={ 1 } />
+
+        <Stars
+        colors={ [this.state.circleColor1, this.state.circleColor2, this.state.circleColor3] }
+        key={ 2 } />
+
+        <Stars
+        colors={ [this.state.circleColor1, this.state.circleColor2, this.state.circleColor3] }
+        key={ 3 } />
+
       </div>
     );
   }

@@ -15,33 +15,36 @@ class Stars extends Component {
 
     this.state = {
       stars: [],
-      backgroundStars: this.generateStars(),
+      backgroundStars: [],
     };
   }
 
   componentDidMount() {
-    setInterval(this.addStar, STAR_SHOW_INTERVAL);
+    setInterval(() => this.addStar(this.props.colors), STAR_SHOW_INTERVAL);
+    this.setState({
+      backgroundStars: this.generateStars(this.props.colors),
+    });
   }
 
-  generateStars = () => {
+  generateStars = (colors) => {
     return [...Array(BACKGROUND_STARS_TOTAL)].map((index) => {
       return {
         id: index,
         top: this.randomNumber(0, window.innerHeight),
         left: this.randomNumber(0, window.innerWidth),
-        background: COLORS[this.randomNumber(0, COLORS.length)],
+        background: colors[this.randomNumber(0, colors.length)],
       };
     });
   }
 
-  addStar = () => {
+  addStar = (colors) => {
     let { stars } = this.state;
 
     stars.push({
       id: STAR_COUNTER,
       top: this.randomNumber(0, window.innerHeight),
       left: this.randomNumber(0, window.innerWidth),
-      background: COLORS[this.randomNumber(0, COLORS.length)],
+      background: colors[this.randomNumber(0, colors.length)],
     });
 
     let newStars = stars.length > MAX_STARS_AMOUNT ? stars.slice(1, stars.length) : stars;
@@ -54,7 +57,7 @@ class Stars extends Component {
   render() {
     return (
       <div id="stars">
-        { this.state.backgroundStars.map((backgroundStar, index) => {
+        {/* { this.state.backgroundStars.map((backgroundStar, index) => {
           return (
             <div
             key={ index }
@@ -66,7 +69,7 @@ class Stars extends Component {
               background: backgroundStar.background,
             }} />
           );
-        }) }
+        }) } */}
 
         <CSSTransitionGroup
         transitionName="star"

@@ -9,12 +9,12 @@
   }
 }
 
-.content {
+/*.content {
   height: 100%;
   background: linear-gradient(45deg, #8FFCCF 0%, #370078 100%);
   position: relative;
   overflow: hidden;
-}
+}*/
 
 .content:before {
   content: '';
@@ -44,6 +44,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.circle:hover {
+  cursor: grab;
+}
+
+.circle.is-active:hover {
+  cursor: grabbing;
 }
 
 .size-xsmall {
@@ -327,4 +335,15 @@
 .star-leave.star-leave-active {
   opacity: 0;
   transition: opacity 2s ease;
+}
+
+.menu {
+  background: white;
+  z-index: 999;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 300px;
+  overflow-y: scroll;
 }
