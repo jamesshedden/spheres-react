@@ -7,7 +7,6 @@ let STAR_COUNTER = 0;
 const MAX_STARS_AMOUNT = 4;
 const STAR_SHOW_INTERVAL = 400;
 const BACKGROUND_STARS_TOTAL = 30;
-const COLORS = ['#FF5130', '#A496FF', '#5CFF80'];
 
 class Stars extends Component {
   constructor() {

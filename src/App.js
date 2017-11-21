@@ -8,60 +8,31 @@ import './App.css';
 const MAX_CIRCLE_AMOUNT = 10;
 const PARALLAX_AMOUNT_DIVISOR = 80;
 
-const AVAILABLE_COLORS = [
-  {
-    label: 'Red',
-    hex: '#FF5130',
-  },
-  {
-    label: 'Orange',
-    hex: '#FEB422',
-  },
-  {
-    label: 'Yellow',
-    hex: '#FFDD30',
-  },
-  {
-    label: 'Green',
-    hex: '#5CFF80',
-  },
-  {
-    label: 'Light blue',
-    hex: '#A2FFFB',
-  },
-  {
-    label: 'Dark blue',
-    hex: '#4692FF',
-  },
-  {
-    label: 'Teal',
-    hex: '#9FFEC4',
-  },
-  {
-    label: 'Dark purple',
-    hex: '#370078',
-  },
-  {
-    label: 'Purple',
-    hex: '#A496FF',
-  },
-  {
-    label: 'Pink',
-    hex: '#F7A2E0',
-  },
-  {
-    label: 'Grey',
-    hex: '#3A3A3A',
-  },
-  {
-    label: 'Dark grey',
-    hex: '#B4B4B4',
-  },
-];
+const AVAILABLE_COLORS = {
+  RED: '#FF5130',
+  ORANGE: '#FEB422',
+  YELLOW: '#FFDD30',
+  GREEN: '#5CFF80',
+  LIGHT_BLUE: '#A2FFFB',
+  DARK_BLUE: '#4692FF',
+  TEAL: '#9FFEC4',
+  DARK_PURPLE: '#370078',
+  PURPLE: '#A496FF',
+  PINK: '#F7A2E0',
+  DARK_GREY: '#3A3A3A',
+  GREY: '#B4B4B4',
+};
 
-const COLORS = ['#FF5130', '#A496FF', '#5CFF80'];
 const SIZES = ['xsmall', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge'];
-const ANGLES = ['0deg', '45deg', '90deg', '135deg', '180deg', '225deg', '270deg', '315deg', '360deg'];
+
+const ANGLES = {
+  0: '0deg',
+  45: '45deg',
+  135: '135deg',
+  180: '180deg',
+  225: '225deg',
+  315: '315deg',
+};
 
 class App extends Component {
   constructor() {
@@ -69,18 +40,15 @@ class App extends Component {
 
     this.state = {
       circles: [],
-      backgroundColor1: '#FEB422',
-      backgroundColor2: '#370078',
-      backgroundAngle: '45deg',
-      circleColor1: '#FF5130',
-      circleColor2: '#A496FF',
-      circleColor3: '#5CFF80',
-      circleAngle: '45deg',
-      startedDraggingAt: 0,
-      isDragging: false,
+      backgroundColor1: AVAILABLE_COLORS.ORANGE,
+      backgroundColor2: AVAILABLE_COLORS.DARK_PURPLE,
+      backgroundAngle: ANGLES[45],
+      circleColor1: AVAILABLE_COLORS.RED,
+      circleColor2: AVAILABLE_COLORS.PURPLE,
+      circleColor3: AVAILABLE_COLORS.GREEN,
+      circleAngle: ANGLES[45],
       activeCircle: null,
       stars: [],
-      showDiv: false,
       circleElements: [],
       sphereCount: 0,
     };
@@ -375,7 +343,7 @@ class App extends Component {
   }
 
   onMouseDown = (event) => {
-    if (!_.includes(event.target.classList, 'circle')) {
+    if (!_.includes(event.target.classList, 'circle') && !_.includes(event.target.classList, 'no-circle')) {
       this.setState({ activeCircle: null });
     }
   }
@@ -466,6 +434,68 @@ class App extends Component {
         } }/>
       );
     }
+
+    const ColorSelect = ({ keyToChange }) => {
+      return (
+        <div className='color-select'>
+          {
+            _.map(AVAILABLE_COLORS, (color, index) => {
+              return (
+                <div key={ index }
+                className={ classNames('color-select__item no-circle', {
+                  'is-active': this.state[keyToChange] === color
+                }) }
+                style={ {
+                  backgroundColor: color,
+                } }
+                onClick={ () => {
+                  console.log('onClick()');
+                  this.setState({
+                    [keyToChange]: color,
+                  });
+                } }>
+                  <img className="color-select__active-icon" src="/tick-icon.svg"/>
+                </div>
+              );
+            })
+          }
+        </div>
+      );
+    }
+
+    const AngleSelect = ({ keyToChange }) => {
+      return (
+        <div className="angle-select">
+          {
+            _.map(ANGLES, (angle, index) => {
+              return (
+                <div key={ index }
+                className={ classNames('angle-select__item no-circle', {
+                  'is-active': this.state[keyToChange] === angle
+                }) }
+                style={ {
+                  background: `
+                    linear-gradient(
+                      ${ angle },
+                      ${ this.state.backgroundColor1 } 0%,
+                      ${ this.state.backgroundColor2 } 100%
+                    )
+                  `,
+                } }
+                onClick={ () => {
+                  this.setState({
+                    [keyToChange]: angle,
+                  });
+                } }>
+                  <img className="angle-select__active-icon" src="/tick-icon.svg"/>
+                </div>
+              );
+            })
+          }
+        </div>
+      );
+    }
+
     return (
       <div id="content" className="content"
       onMouseMove={ this.throttledMouseMove }
@@ -488,149 +518,207 @@ class App extends Component {
       } }
       >
         <div className="menu no-circle">
-          <h1 className="no-circle">Background 1</h1>
 
-          {
-            AVAILABLE_COLORS.map((color) => {
-              return (
-                <div className="no-circle"
-                style={ {
-                  backgroundColor: color.hex,
-                  width: '25px',
-                  height: '25px',
-                  display: 'inline-block',
-                } }
-                onClick={ () => {
-                  this.setState({
-                    backgroundColor1: color.hex,
-                  });
-                } }>
-                </div>
-              );
-            })
-          }
+          <div className="menu__section">
+            <div className="menu__section-title">
+              Background
+            </div>
 
-          <h1 className="no-circle">Background 2</h1>
+            <div className="menu__section-item">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isBackgroundColor1Toggled: !prevState.isBackgroundColor1Toggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Colour 1
 
-          {
-            AVAILABLE_COLORS.map((color) => {
-              return (
-                <div className="no-circle"
-                style={ {
-                  backgroundColor: color.hex,
-                  width: '25px',
-                  height: '25px',
-                  display: 'inline-block',
-                } }
-                onClick={ () => {
-                  this.setState({
-                    backgroundColor2: color.hex,
-                  });
-                } }>
-                </div>
-              );
-            })
-          }
+                {
+                  this.state.isBackgroundColor1Toggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  : null
+                }
+              </div>
 
-          <h1 className="no-circle">Background angle</h1>
+              {
+                this.state.isBackgroundColor1Toggled ?
+                <ColorSelect keyToChange='backgroundColor1'/>
+                : null
+              }
+            </div>
 
-          {
-            ANGLES.map((angle) => {
-              return (
-                <div className="no-circle"
-                onClick={ () => {
-                  this.setState({
-                    backgroundAngle: angle,
-                  });
-                } }>
-                  { angle }
-                </div>
-              );
-            })
-          }
+            <div className="menu__section-item">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isBackgroundColor2Toggled: !prevState.isBackgroundColor2Toggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Colour 2
 
-          <h1 className="no-circle">Circle 1</h1>
+                {
+                  this.state.isBackgroundColor2Toggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  : null
+                }
+              </div>
 
-          {
-            AVAILABLE_COLORS.map((color) => {
-              return (
-                <div className="no-circle"
-                style={ {
-                  backgroundColor: color.hex,
-                  width: '25px',
-                  height: '25px',
-                  display: 'inline-block',
-                } }
-                onClick={ () => {
-                  this.setState({
-                    circleColor1: color.hex,
-                  });
-                } }>
-                </div>
-              );
-            })
-          }
+              {
+                this.state.isBackgroundColor2Toggled ?
+                <ColorSelect keyToChange='backgroundColor2'/>
+                : null
+              }
+            </div>
 
-          <h1 className="no-circle">Circle 2</h1>
+            <div className="menu__section-item">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isBackgroundAngleToggled: !prevState.isBackgroundAngleToggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Direction
 
-          {
-            AVAILABLE_COLORS.map((color) => {
-              return (
-                <div className="no-circle"
-                style={ {
-                  backgroundColor: color.hex,
-                  width: '25px',
-                  height: '25px',
-                  display: 'inline-block',
-                } }
-                onClick={ () => {
-                  this.setState({
-                    circleColor2: color.hex,
-                  });
-                } }>
-                </div>
-              );
-            })
-          }
+                {
+                  this.state.isBackgroundAngleToggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  : null
+                }
+              </div>
 
-          <h1 className="no-circle">Circle 3</h1>
+              {
+                this.state.isBackgroundAngleToggled ?
+                <AngleSelect keyToChange='backgroundAngle'/>
+                : null
+              }
+            </div>
+          </div>
 
-          {
-            AVAILABLE_COLORS.map((color) => {
-              return (
-                <div className="no-circle"
-                style={ {
-                  backgroundColor: color.hex,
-                  width: '25px',
-                  height: '25px',
-                  display: 'inline-block',
-                } }
-                onClick={ () => {
-                  this.setState({
-                    circleColor3: color.hex,
-                  });
-                } }>
-                </div>
-              );
-            })
-          }
+          <div className="menu__section">
+            <div className="menu__section-title">
+              Spheres
+            </div>
 
-          <h1 className="no-circle">Circle angle</h1>
+            <div className="menu__section-item">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isCircleColor1Toggled: !prevState.isCircleColor1Toggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Colour 1
 
-          {
-            ANGLES.map((angle) => {
-              return (
-                <div className="no-circle"
-                onClick={ () => {
-                  this.setState({
-                    circleAngle: angle,
-                  });
-                } }>
-                  { angle }
-                </div>
-              );
-            })
-          }
+                {
+                  this.state.isCircleColor1Toggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  : null
+                }
+              </div>
+
+              {
+                this.state.isCircleColor1Toggled ?
+                <ColorSelect keyToChange='circleColor1'/>
+                : null
+              }
+            </div>
+
+            <div className="menu__section-item">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isCircleColor2Toggled: !prevState.isCircleColor2Toggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Colour 2
+
+                {
+                  this.state.isCircleColor2Toggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  : null
+                }
+              </div>
+
+              {
+                this.state.isCircleColor2Toggled ?
+                <ColorSelect keyToChange='circleColor2'/>
+                : null
+              }
+            </div>
+
+            <div className="menu__section-item">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isCircleColor3Toggled: !prevState.isCircleColor3Toggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Colour 3
+
+                {
+                  this.state.isCircleColor3Toggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  : null
+                }
+              </div>
+
+              {
+                this.state.isCircleColor3Toggled ?
+                <ColorSelect keyToChange='circleColor3'/>
+                : null
+              }
+            </div>
+
+            <div className="menu__section-item">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isCircleAngleToggled: !prevState.isCircleAngleToggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Direction
+
+                {
+                  this.state.isCircleAngleToggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  : null
+                }
+              </div>
+
+              {
+                this.state.isCircleAngleToggled ?
+                <AngleSelect keyToChange='circleAngle'/>
+                : null
+              }
+            </div>
+          </div>
         </div>
 
         <ImagePreloader />
