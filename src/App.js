@@ -477,7 +477,7 @@ class App extends Component {
                   background: `
                     linear-gradient(
                       ${ angle },
-                      ${ this.state.backgroundColor1 } 0%,
+                      ${ keyToChange === 'backgroundAngle'? this.state.backgroundColor1 : this.state.circleColor1 } 0%,
                       ${ this.state.backgroundColor2 } 100%
                     )
                   `,
@@ -509,8 +509,14 @@ class App extends Component {
         background: `
           linear-gradient(
             ${ this.state.backgroundAngle },
-            ${ this.state.backgroundColor1 } 0%,
-            ${ this.state.backgroundColor2 } 100%
+            ${ this.state.backgroundColor1 } ${
+              this.state.backgroundAngle === '0deg' || this.state.backgroundAngle === '180deg' ?
+                '0%' : '10%'
+            },
+            ${ this.state.backgroundColor2 } ${
+              this.state.backgroundAngle === '0deg' || this.state.backgroundAngle === '180deg' ?
+                '100%' : '90%'
+            }
           )
         `,
         position: 'relative',
@@ -749,8 +755,14 @@ class App extends Component {
                 background: `
                   linear-gradient(
                     ${ this.state.circleAngle },
-                    ${ this.state.backgroundColor2 } 0%,
-                    ${ color } 100%
+                    ${ color } ${
+                      this.state.circleAngle === '0deg' || this.state.circleAngle === '180deg' ?
+                        '0%' : '15%'
+                    },
+                    ${ this.state.backgroundColor2 } ${
+                      this.state.circleAngle === '0deg' || this.state.circleAngle === '180deg' ?
+                        '100%' : '85%'
+                    }
                   )
                 `,
                 transform: `translateX(${ circle.translateX }px) translateY(${ circle.translateY }px)`,
