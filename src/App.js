@@ -57,7 +57,15 @@ class App extends Component {
   componentDidMount = () => {
     window.addEventListener('resize', this.throttledWindowResize); // TODO: remove event listener on unmount
 
-    window.addEventListener('deviceorientation', this.throttledDeviceOrientation); // TODO: remove event listener on unmount
+    window.addEventListener('deviceorientation', () => {
+      this.throttledDeviceOrientation();
+
+      if (!this.state.isDeviceOrientationUser) {
+        this.setState({
+          isDeviceOrientationUser: true,
+        });
+      }
+    });
 
     window.addEventListener('touchstart', () => {
       // the higher this is, the less we see any parallax effects — this
@@ -260,9 +268,15 @@ class App extends Component {
     // should come from transforms.
     //
 
-    if (this.state.isTouchUser) {
-      pageX = this.state.deviceOrientationGamma*3;
-      pageY = this.state.deviceOrientationBeta*3;
+    let xForGetPointerCoordinatesFromCentre;
+    let yForGetPointerCoordinatesFromCentre;
+
+    if (this.state.isDeviceOrientationUser && this.state.isTouchUser) {
+      xForGetPointerCoordinatesFromCentre = this.state.deviceOrientationGamma*3;
+      yForGetPointerCoordinatesFromCentre = this.state.deviceOrientationBeta*3;
+    } else {
+      xForGetPointerCoordinatesFromCentre = pageX;
+      yForGetPointerCoordinatesFromCentre = pageY;
     }
 
     const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
@@ -271,7 +285,10 @@ class App extends Component {
       // the gamma & beta values, which represent the altered 'viewpoint' on the x & y axis,
       // in the same way the pointer coordinates normally represent the 'viewpoint' on
       // desktop
-      this.getPointerCoordinatesFromCentre(pageX, pageY),
+      this.getPointerCoordinatesFromCentre(
+        xForGetPointerCoordinatesFromCentre,
+        yForGetPointerCoordinatesFromCentre
+      ),
       multiplierForTranslateAmounts,
       PARALLAX_AMOUNT_DIVISOR,
     );
