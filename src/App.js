@@ -102,6 +102,11 @@ class App extends Component {
       if (x >  90) { x =  90};
       if (x < -90) { x = -90};
 
+      this.setState({
+        deviceOrientationBeta: x,
+        deviceOrientationGamma: y,
+      });
+
       this.transformCirclesWithOrientation(this.state.circleElements, y, x);
     }
   }
@@ -235,23 +240,55 @@ class App extends Component {
 
     let { pageX, pageY } = event;
 
-    // const randomDimension = this.randomNumber(100, 250);
-
+    // calculating the position of the sphere in the stack
+    // if we haven't hit the total number of spheres yet, we can just use the
+    // latest sphere count.
+    //
+    // if now, we can take the total amount and minus 1 (essentially means the
+    // newest sphere always has the maximum possible index/multiplier)
     const multiplierForTranslateAmounts = this.state.sphereCount > MAX_CIRCLE_AMOUNT ?
       MAX_CIRCLE_AMOUNT - 1 : this.state.sphereCount;
 
+    // Based on where we clicked to make the circle, we need to figure out
+    // how much of its position should be affected by transform amounts
+    //
+    // distance = top & left position + translateX & translateY based on
+    // cursor position.
+    //
+    // so we take the cursor's position, the 'multiplier' i.e. the index of the
+    // sphere & the parallax 'amount' to figure out how much of its position
+    // should come from transforms.
+    //
+
+    if (this.state.isTouchUser) {
+      pageX = this.state.deviceOrientationGamma*3;
+      pageY = this.state.deviceOrientationBeta*3;
+    }
+
     const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
+      // TODO: DEVICE ORIENTATION
+      // for device orientation, we don't care about pointer coordinates — we care about
+      // the gamma & beta values, which represent the altered 'viewpoint' on the x & y axis,
+      // in the same way the pointer coordinates normally represent the 'viewpoint' on
+      // desktop
       this.getPointerCoordinatesFromCentre(pageX, pageY),
       multiplierForTranslateAmounts,
       PARALLAX_AMOUNT_DIVISOR,
     );
 
-    // let color = COLORS[this.randomNumber(0, COLORS.length)];
+    // get random 'color index' — this can refer to color 1, 2 and 3 — the colours
+    // could be subject to change, but spheres should remember which number
+    // they are.
     let colorIndex = this.randomNumber(1, 3);
+
+    // random size
     let size = SIZES[this.randomNumber(0, SIZES.length)];
 
+    // cache circles
     let circles = this.state.circles;
 
+    // now we can set the top & left positions as the place where we clicked,
+    // minus the amounts we know should come from translations
     let top = pageY - translateY;
     let left = pageX - translateX;
 
@@ -318,7 +355,6 @@ class App extends Component {
     _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
         this.getPointerCoordinatesFromCentre(x*3, y*3),
-        // this.state.circles.length - index,
         index,
         PARALLAX_AMOUNT_DIVISOR,
       );
