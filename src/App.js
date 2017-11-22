@@ -46,7 +46,7 @@ class App extends Component {
       circleColor1: AVAILABLE_COLORS.RED,
       circleColor2: AVAILABLE_COLORS.PURPLE,
       circleColor3: AVAILABLE_COLORS.GREEN,
-      circleAngle: ANGLES[45],
+      circleAngle: ANGLES[225],
       activeCircle: null,
       stars: [],
       circleElements: [],
