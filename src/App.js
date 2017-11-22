@@ -317,7 +317,7 @@ class App extends Component {
   transformCirclesWithOrientation = (circles, x, y) => {
     _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
-        this.getPointerCoordinatesFromCentre(x, y),
+        this.getPointerCoordinatesFromCentre(x*2, y*2),
         this.state.circles.length - index,
         PARALLAX_AMOUNT_DIVISOR / 2,
       );
