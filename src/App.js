@@ -102,7 +102,7 @@ class App extends Component {
       if (x >  90) { x =  90};
       if (x < -90) { x = -90};
 
-      this.transformCircles(this.state.circleElements, y, x);
+      this.transformCirclesWithOrientation(this.state.circleElements, y, x);
     }
   }
 
@@ -308,6 +308,18 @@ class App extends Component {
         this.getPointerCoordinatesFromCentre(x, y),
         index,
         PARALLAX_AMOUNT_DIVISOR,
+      );
+
+      circle.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`;
+    });
+  }
+
+  transformCirclesWithOrientation = (circles, x, y) => {
+    _.forEach(circles, (circle, index) => {
+      const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
+        this.getPointerCoordinatesFromCentre(x, y),
+        this.state.circles.length - index,
+        PARALLAX_AMOUNT_DIVISOR / 2,
       );
 
       circle.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`;
