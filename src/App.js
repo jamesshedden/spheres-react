@@ -496,6 +496,292 @@ class App extends Component {
       );
     }
 
+    const Menu = () => {
+      return (
+        <div className="menu no-circle">
+
+          {
+            this.state.isMenuOpen ?
+            <div className="close-menu-icon no-circle"
+            style={ {
+              zIndex: 9999, display: 'inline-block', position: 'absolute', top: 15, left: 15,
+            }}
+            onClick={ () => {
+              this.setState((prevState) => {
+                return {
+                  isMenuOpen: !this.state.isMenuOpen,
+                };
+              })
+            } }>
+              <img src="/close-icon.svg"
+              className="no-circle"
+              />
+            </div>
+            : null
+          }
+
+          <div className="menu__title no-circle">
+            <div className="menu__title-sphere no-circle"></div>
+
+            Spheres
+          </div>
+
+          <div className="menu__section no-circle">
+            <div className="menu__section-title no-circle">
+              Background
+            </div>
+
+            <div className="menu__section-item no-circle">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isBackgroundColor1Toggled: !prevState.isBackgroundColor1Toggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Colour 1
+
+                {
+                  this.state.isBackgroundColor1Toggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  :
+                  <div className="no-circle menu__section-item-preview"
+                  style={ {
+                    backgroundColor: this.state.backgroundColor1
+                  } }/>
+                }
+              </div>
+
+              {
+                this.state.isBackgroundColor1Toggled ?
+                <ColorSelect keyToChange='backgroundColor1'/>
+                : null
+              }
+            </div>
+
+            <div className="menu__section-item no-circle">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isBackgroundColor2Toggled: !prevState.isBackgroundColor2Toggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Colour 2
+
+                {
+                  this.state.isBackgroundColor2Toggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  :
+                  <div className="no-circle menu__section-item-preview"
+                  style={ {
+                    backgroundColor: this.state.backgroundColor2
+                  } }/>
+                }
+              </div>
+
+              {
+                this.state.isBackgroundColor2Toggled ?
+                <ColorSelect keyToChange='backgroundColor2'/>
+                : null
+              }
+            </div>
+
+            <div className="menu__section-item no-circle">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isBackgroundAngleToggled: !prevState.isBackgroundAngleToggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Direction
+
+                {
+                  this.state.isBackgroundAngleToggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  :
+                  <div className="no-circle menu__section-item-preview"
+                  style={ {
+                    background: `
+                      linear-gradient(
+                        ${ this.state.backgroundAngle },
+                        ${ this.state.backgroundColor1 } ${
+                          this.state.backgroundAngle === '0deg' || this.state.backgroundAngle === '180deg' ?
+                            '0%' : '10%'
+                        },
+                        ${ this.state.backgroundColor2 } ${
+                          this.state.backgroundAngle === '0deg' || this.state.backgroundAngle === '180deg' ?
+                            '100%' : '90%'
+                        }
+                      )
+                    `
+                  } }/>
+                }
+              </div>
+
+              {
+                this.state.isBackgroundAngleToggled ?
+                <AngleSelect keyToChange='backgroundAngle'/>
+                : null
+              }
+            </div>
+          </div>
+
+          <div className="menu__section no-circle">
+            <div className="menu__section-title no-circle">
+              Spheres
+            </div>
+
+            <div className="menu__section-item no-circle">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isCircleColor1Toggled: !prevState.isCircleColor1Toggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Colour 1
+
+                {
+                  this.state.isCircleColor1Toggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  :
+                  <div className="no-circle menu__section-item-preview menu__section-item-preview--sphere"
+                  style={ {
+                    backgroundColor: this.state.circleColor1
+                  } }/>
+                }
+              </div>
+
+              {
+                this.state.isCircleColor1Toggled ?
+                <ColorSelect keyToChange='circleColor1'/>
+                : null
+              }
+            </div>
+
+            <div className="menu__section-item no-circle">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isCircleColor2Toggled: !prevState.isCircleColor2Toggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Colour 2
+
+                {
+                  this.state.isCircleColor2Toggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  :
+                  <div className="no-circle menu__section-item-preview menu__section-item-preview--sphere"
+                  style={ {
+                    backgroundColor: this.state.circleColor2
+                  } }/>
+                }
+              </div>
+
+              {
+                this.state.isCircleColor2Toggled ?
+                <ColorSelect keyToChange='circleColor2'/>
+                : null
+              }
+            </div>
+
+            <div className="menu__section-item no-circle">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isCircleColor3Toggled: !prevState.isCircleColor3Toggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Colour 3
+
+                {
+                  this.state.isCircleColor3Toggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  :
+                  <div className="no-circle menu__section-item-preview menu__section-item-preview--sphere"
+                  style={ {
+                    backgroundColor: this.state.circleColor3
+                  } }/>
+                }
+              </div>
+
+              {
+                this.state.isCircleColor3Toggled ?
+                <ColorSelect keyToChange='circleColor3'/>
+                : null
+              }
+            </div>
+
+            <div className="menu__section-item no-circle">
+              <div onClick={ () => {
+                this.setState((prevState) => {
+                  return {
+                    isCircleAngleToggled: !prevState.isCircleAngleToggled,
+                  };
+                });
+              } }
+              className="menu__section-item-title no-circle">
+                Direction
+
+                {
+                  this.state.isCircleAngleToggled ?
+                  <div className="menu__section-item-close no-circle">
+                    Close
+                  </div>
+                  :
+                  <div className="no-circle menu__section-item-preview menu__section-item-preview--sphere"
+                  style={ {
+                    background: `
+                      linear-gradient(
+                        ${ this.state.circleAngle },
+                        ${ this.state.circleColor1 } ${
+                          this.state.circleAngle === '0deg' || this.state.circleAngle === '180deg' ?
+                            '0%' : '15%'
+                        },
+                        ${ this.state.backgroundColor2 } ${
+                          this.state.circleAngle === '0deg' || this.state.circleAngle === '180deg' ?
+                            '100%' : '85%'
+                        }
+                      )
+                    `
+                  } }/>
+                }
+              </div>
+
+              {
+                this.state.isCircleAngleToggled ?
+                <AngleSelect keyToChange='circleAngle'/>
+                : null
+              }
+            </div>
+          </div>
+        </div>
+      );
+    };
+
     return (
       <div id="content" className="content"
       onMouseMove={ this.throttledMouseMove }
@@ -523,209 +809,30 @@ class App extends Component {
         overflow: 'hidden',
       } }
       >
-        <div className="menu no-circle">
-
-          <div className="menu__section">
-            <div className="menu__section-title">
-              Background
-            </div>
-
-            <div className="menu__section-item">
-              <div onClick={ () => {
-                this.setState((prevState) => {
-                  return {
-                    isBackgroundColor1Toggled: !prevState.isBackgroundColor1Toggled,
-                  };
-                });
-              } }
-              className="menu__section-item-title no-circle">
-                Colour 1
-
-                {
-                  this.state.isBackgroundColor1Toggled ?
-                  <div className="menu__section-item-close no-circle">
-                    Close
-                  </div>
-                  : null
-                }
-              </div>
-
-              {
-                this.state.isBackgroundColor1Toggled ?
-                <ColorSelect keyToChange='backgroundColor1'/>
-                : null
-              }
-            </div>
-
-            <div className="menu__section-item">
-              <div onClick={ () => {
-                this.setState((prevState) => {
-                  return {
-                    isBackgroundColor2Toggled: !prevState.isBackgroundColor2Toggled,
-                  };
-                });
-              } }
-              className="menu__section-item-title no-circle">
-                Colour 2
-
-                {
-                  this.state.isBackgroundColor2Toggled ?
-                  <div className="menu__section-item-close no-circle">
-                    Close
-                  </div>
-                  : null
-                }
-              </div>
-
-              {
-                this.state.isBackgroundColor2Toggled ?
-                <ColorSelect keyToChange='backgroundColor2'/>
-                : null
-              }
-            </div>
-
-            <div className="menu__section-item">
-              <div onClick={ () => {
-                this.setState((prevState) => {
-                  return {
-                    isBackgroundAngleToggled: !prevState.isBackgroundAngleToggled,
-                  };
-                });
-              } }
-              className="menu__section-item-title no-circle">
-                Direction
-
-                {
-                  this.state.isBackgroundAngleToggled ?
-                  <div className="menu__section-item-close no-circle">
-                    Close
-                  </div>
-                  : null
-                }
-              </div>
-
-              {
-                this.state.isBackgroundAngleToggled ?
-                <AngleSelect keyToChange='backgroundAngle'/>
-                : null
-              }
-            </div>
+        {
+          !this.state.isMenuOpen ?
+          <div className="open-menu-icon no-circle"
+          style={ {
+            zIndex: 9999, display: 'inline-block', position: 'absolute', top: 15, left: 15,
+          }}
+          onClick={ () => {
+            this.setState((prevState) => {
+              return {
+                isMenuOpen: !this.state.isMenuOpen,
+              };
+            })
+          } }>
+            <img src="/menu-icon.svg"
+            className="no-circle"
+            />
           </div>
+          : null
+        }
 
-          <div className="menu__section">
-            <div className="menu__section-title">
-              Spheres
-            </div>
-
-            <div className="menu__section-item">
-              <div onClick={ () => {
-                this.setState((prevState) => {
-                  return {
-                    isCircleColor1Toggled: !prevState.isCircleColor1Toggled,
-                  };
-                });
-              } }
-              className="menu__section-item-title no-circle">
-                Colour 1
-
-                {
-                  this.state.isCircleColor1Toggled ?
-                  <div className="menu__section-item-close no-circle">
-                    Close
-                  </div>
-                  : null
-                }
-              </div>
-
-              {
-                this.state.isCircleColor1Toggled ?
-                <ColorSelect keyToChange='circleColor1'/>
-                : null
-              }
-            </div>
-
-            <div className="menu__section-item">
-              <div onClick={ () => {
-                this.setState((prevState) => {
-                  return {
-                    isCircleColor2Toggled: !prevState.isCircleColor2Toggled,
-                  };
-                });
-              } }
-              className="menu__section-item-title no-circle">
-                Colour 2
-
-                {
-                  this.state.isCircleColor2Toggled ?
-                  <div className="menu__section-item-close no-circle">
-                    Close
-                  </div>
-                  : null
-                }
-              </div>
-
-              {
-                this.state.isCircleColor2Toggled ?
-                <ColorSelect keyToChange='circleColor2'/>
-                : null
-              }
-            </div>
-
-            <div className="menu__section-item">
-              <div onClick={ () => {
-                this.setState((prevState) => {
-                  return {
-                    isCircleColor3Toggled: !prevState.isCircleColor3Toggled,
-                  };
-                });
-              } }
-              className="menu__section-item-title no-circle">
-                Colour 3
-
-                {
-                  this.state.isCircleColor3Toggled ?
-                  <div className="menu__section-item-close no-circle">
-                    Close
-                  </div>
-                  : null
-                }
-              </div>
-
-              {
-                this.state.isCircleColor3Toggled ?
-                <ColorSelect keyToChange='circleColor3'/>
-                : null
-              }
-            </div>
-
-            <div className="menu__section-item">
-              <div onClick={ () => {
-                this.setState((prevState) => {
-                  return {
-                    isCircleAngleToggled: !prevState.isCircleAngleToggled,
-                  };
-                });
-              } }
-              className="menu__section-item-title no-circle">
-                Direction
-
-                {
-                  this.state.isCircleAngleToggled ?
-                  <div className="menu__section-item-close no-circle">
-                    Close
-                  </div>
-                  : null
-                }
-              </div>
-
-              {
-                this.state.isCircleAngleToggled ?
-                <AngleSelect keyToChange='circleAngle'/>
-                : null
-              }
-            </div>
-          </div>
-        </div>
+        {
+          this.state.isMenuOpen ?
+            <Menu/> : null
+        }
 
         <ImagePreloader />
         {/* <div className="content__overlay" /> */}

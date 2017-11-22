@@ -344,8 +344,14 @@
   top: 0;
   left: 0;
   height: 100%;
-  width: 300px;
+  width: 100%;
   overflow-y: scroll;
+}
+
+@media (min-width: 420px) {
+  .menu {
+    width: 300px;
+  }
 }
 
 .color-select {
@@ -432,4 +438,51 @@
   right: 15px;
   top: 50%;
   transform: translateY(-50%);
+}
+
+.menu__section-item-preview {
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 1px solid #DBDBDB;
+}
+
+.menu__section-item-preview--sphere {
+  border-radius: 50%;
+}
+
+.menu__title {
+  font-size: 18px;
+  font-weight: 300;
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  align-items: center;
+  padding-top: 15px;
+}
+
+.menu__title-sphere {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background: linear-gradient(
+    225deg,
+    white 15%,
+    black 85%
+  );
+}
+
+.close-menu-icon,
+.open-menu-icon {
+  opacity: 0.5;
+}
+
+.close-menu-icon:hover,
+.open-menu-icon:hover {
+  cursor: pointer;
+  opacity: 1;
 }
