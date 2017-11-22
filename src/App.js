@@ -6,7 +6,7 @@ import Stars from './Stars';
 import './App.css';
 
 const MAX_CIRCLE_AMOUNT = 10;
-const PARALLAX_AMOUNT_DIVISOR = 80;
+let PARALLAX_AMOUNT_DIVISOR = 80;
 
 const AVAILABLE_COLORS = {
   RED: '#FF5130',
@@ -55,7 +55,26 @@ class App extends Component {
   }
 
   componentDidMount() {
-    window.addEventListener("resize", this.throttledWindowResize); // TODO: remove event listener on unmount
+    window.addEventListener('resize', this.throttledWindowResize); // TODO: remove event listener on unmount
+
+    window.addEventListener('touchstart', function() {
+      // the higher this is, the less we see any parallax effects — this
+      // effectively turns parallax off if the user is interacting via
+      // touch events
+      PARALLAX_AMOUNT_DIVISOR = 5000;
+    });
+
+    // - Only allow touchmove on menu
+    //
+    // - Elsewhere we add it back specifically for the main content element with
+    // a `onTouchMove` prop, but we don't want it on the document to prevent
+    // mobile browser from pulling the entire window up and down when we only
+    // want to drag a sphere
+    window.addEventListener('touchmove', (event) => {
+      if (!event.target.classList.contains('no-circle')) {
+        event.preventDefault();
+      }
+    });
   }
 
   componentDidUpdate() {
@@ -88,15 +107,28 @@ class App extends Component {
     };
   }
 
-  getTranslateAmountsFromCoordinates = (coordinates, multiplierFromZero, divisor) => {
+  getTranslateAmountsFromCoordinates = (coordinates, multiplierFromZero, parallaxDivisor) => {
     // multiplier comes from the counter, or the array index of a circle element, so
     // will sometimes be 0 or 1 but we don't want to multiply by these
     const MULTIPLIER_BUFFER = 2;
 
     const multiplier = multiplierFromZero + MULTIPLIER_BUFFER
 
-    const translateX = (coordinates.x * (multiplier)) / divisor;
-    const translateY = (coordinates.y * (multiplier)) / divisor;
+    let translateX;
+    let translateY;
+
+    // for now we want to set the divisor to null whenever we detect the movement
+    // is coming from a touch event, as parallax currently doesn't work on
+    // tablets/phones so we don't want to account for the parallax divisor
+    //
+    // therefore we have a case for when it's falsy
+    if (PARALLAX_AMOUNT_DIVISOR !== 0) {
+      translateX = (coordinates.x * (multiplier)) / parallaxDivisor;
+      translateY = (coordinates.y * (multiplier)) / parallaxDivisor;
+    } else {
+      translateX = coordinates.x;
+      translateY = coordinates.y;
+    }
 
     return {
       translateX,
@@ -170,7 +202,9 @@ class App extends Component {
   }
 
   makeCircle = (event) => {
-    if (event.type === 'touchend') {
+    let eventType = event.type;
+
+    if (eventType === 'touchend') {
       event = event.nativeEvent;
     } else {
       event.persist();
@@ -245,10 +279,12 @@ class App extends Component {
     }
   }
 
-  transformCircles = (circles, x, y) => {
+  transformCircles = (circles, event) => {
+    let { pageX, pageY } = event;
+
     _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
-        this.getPointerCoordinatesFromCentre(x, y),
+        this.getPointerCoordinatesFromCentre(pageX, pageY),
         index,
         PARALLAX_AMOUNT_DIVISOR,
       );
@@ -281,7 +317,15 @@ class App extends Component {
     }
   }
 
-  transformActiveCircle = (pageX, pageY) => {
+  transformActiveCircle = (event) => {
+    if (event.type === 'touchend') {
+      event = event.nativeEvent;
+    } else {
+      event.persist();
+    }
+
+    let { pageX, pageY } = event;
+
     let activeCircleIndex = _.findIndex(this.state.circles, { id: this.state.activeCircle.id });
 
     const {
@@ -321,8 +365,8 @@ class App extends Component {
     };
   }
 
-  moveActiveCircle = (element, pageX, pageY) => {
-    const {
+  moveActiveCircle = (element, pageX, pageY, eventType) => {
+    let {
       top,
       left,
       translateX,
@@ -331,14 +375,22 @@ class App extends Component {
 
     element.style.top = `${ top }px`;
     element.style.left = `${ left }px`;
-    element.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`
+    element.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`;
   }
 
   onMouseMove = (event) => {
+    const eventType = event.type;
+
+    if (eventType === 'touchmove') {
+      event = event.nativeEvent;
+    } else {
+      event.persist();
+    }
+
     const { pageX, pageY } = event;
 
     if (this.state.circleElements.length) {
-      this.transformCircles(this.state.circleElements, pageX, pageY);
+      this.transformCircles(this.state.circleElements, event);
     }
 
     if (this.state.activeCircle) {
@@ -350,31 +402,25 @@ class App extends Component {
     if (!_.includes(event.target.classList, 'circle') && !_.includes(event.target.classList, 'no-circle')) {
       this.setState({
         activeCircle: null,
-        menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
+        menuContentsScrollPosition: document.getElementById('menu-content') && document.getElementById('menu-content').scrollTop,
       });
     }
 
     if (_.includes(event.target.classList, 'circle')) {
       this.setState({
-        menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
+        menuContentsScrollPosition: document.getElementById('menu-content') && document.getElementById('menu-content').scrollTop,
       });
     }
   }
 
   throttledMouseMove = (event) => {
-    if (event.type === 'touchend') {
-      event = event.nativeEvent;
-    } else {
-      event.persist();
-    }
-
     _.throttle(this.onMouseMove.bind(this, event), 20)();
   }
 
   onMouseUp = (event) => {
     if (!_.includes(event.target.classList, 'no-circle')) {
       if (this.state.activeCircle && event.timeStamp - this.state.activeCircle.activeAt > 200) {
-        this.transformActiveCircle(event.pageX, event.pageY);
+        this.transformActiveCircle(event);
         this.state.activeCircle.element.classList.remove('is-active');
         this.setState({ activeCircle: null });
       } else {
@@ -385,7 +431,7 @@ class App extends Component {
   }
 
   onCircleMouseDown = (event, circle) => {
-    if (event.type === 'touchend') {
+    if (event.type === 'touchend' || event.type === 'touchstart') {
       event = event.nativeEvent;
     }
 
@@ -495,7 +541,6 @@ class App extends Component {
                   backgroundColor: color,
                 } }
                 onClick={ () => {
-                  console.log('onClick()');
                   this.setState({
                     [keyToChange]: color,
                     menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
@@ -575,6 +620,29 @@ class App extends Component {
               <div className="menu__title-sphere no-circle"></div>
 
               Spheres
+            </div>
+
+            <div className="menu__section no-circle">
+              <div className="menu__section-item no-circle">
+                <div onClick={ this.randomiseSettings }
+                className="menu__section-item-title no-circle">
+                  Randomise!
+                </div>
+              </div>
+
+              <div className="menu__section-item no-circle">
+                <div onClick={ () => {
+                  this.setState((prevState) => {
+                    return {
+                      isRandomiseShortcutVisible: !prevState.isRandomiseShortcutVisible,
+                      menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
+                    };
+                  });
+                } }
+                className="menu__section-item-title no-circle">
+                  { this.state.isRandomiseShortcutVisible ? 'Hide' : 'Show' } randomise shortcut
+                </div>
+              </div>
             </div>
 
             <div className="menu__section no-circle">
@@ -837,28 +905,6 @@ class App extends Component {
               </div>
             </div>
 
-            <div className="menu__section no-circle">
-              <div className="menu__section-item no-circle">
-                <div onClick={ this.randomiseSettings }
-                className="menu__section-item-title no-circle">
-                  Randomise settings
-                </div>
-              </div>
-
-              <div className="menu__section-item no-circle">
-                <div onClick={ () => {
-                  this.setState((prevState) => {
-                    return {
-                      isRandomiseShortcutVisible: !prevState.isRandomiseShortcutVisible,
-                      menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
-                    };
-                  });
-                } }
-                className="menu__section-item-title no-circle">
-                  { this.state.isRandomiseShortcutVisible ? 'Hide' : 'Show' } randomise shortcut
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       );
@@ -930,8 +976,7 @@ class App extends Component {
         transitionName="circle"
         transitionEnterTimeout={200}
         transitionLeaveTimeout={1}>
-          { this.state.circles.map((circle, index) => {
-
+          { this.state.circles.map((circle, index) => {;
             let color;
             if (circle.colorIndex === 1) {
               color = this.state.circleColor1;
