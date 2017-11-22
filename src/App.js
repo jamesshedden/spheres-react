@@ -54,14 +54,19 @@ class App extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount = () => {
     window.addEventListener('resize', this.throttledWindowResize); // TODO: remove event listener on unmount
 
-    window.addEventListener('touchstart', function() {
+    window.addEventListener('deviceorientation', this.throttledDeviceOrientation); // TODO: remove event listener on unmount
+
+    window.addEventListener('touchstart', () => {
       // the higher this is, the less we see any parallax effects — this
       // effectively turns parallax off if the user is interacting via
       // touch events
-      PARALLAX_AMOUNT_DIVISOR = 5000;
+      // PARALLAX_AMOUNT_DIVISOR = 5000;
+      this.setState({
+        isTouchUser: true,
+      });
     });
 
     // - Only allow touchmove on menu
@@ -80,6 +85,24 @@ class App extends Component {
   componentDidUpdate() {
     if (this.state.isMenuOpen && this.state.menuContentsScrollPosition) {
       document.getElementById('menu-content').scrollTop = this.state.menuContentsScrollPosition;
+    }
+  }
+
+  throttledDeviceOrientation = (event) => {
+    _.throttle(_.partial(this.onDeviceOrientation, event), 10)();
+  }
+
+  onDeviceOrientation = (event) => {
+    if (this.state.circleElements.length && this.state.isTouchUser) {
+      let x = event.beta;
+      let y = event.gamma;
+
+      // Because we don't want to have the device upside down
+      // We constrain the x value to the range [-90,90]
+      if (x >  90) { x =  90};
+      if (x < -90) { x = -90};
+
+      this.transformCircles(this.state.circleElements, x, y);
     }
   }
 
@@ -279,12 +302,10 @@ class App extends Component {
     }
   }
 
-  transformCircles = (circles, event) => {
-    let { pageX, pageY } = event;
-
+  transformCircles = (circles, x, y) => {
     _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
-        this.getPointerCoordinatesFromCentre(pageX, pageY),
+        this.getPointerCoordinatesFromCentre(x, y),
         index,
         PARALLAX_AMOUNT_DIVISOR,
       );
@@ -379,19 +400,25 @@ class App extends Component {
   }
 
   onMouseMove = (event) => {
-    const eventType = event.type;
-
-    if (eventType === 'touchmove') {
-      event = event.nativeEvent;
-    } else {
-      event.persist();
-    }
+    event.persist();
 
     const { pageX, pageY } = event;
 
-    if (this.state.circleElements.length) {
-      this.transformCircles(this.state.circleElements, event);
+    // This shouldn't get called when user isTouchUser, but
+    // still seems to get triggered in some situations e.g. opening the menu
+    if (this.state.circleElements.length && !this.state.isTouchUser) {
+      this.transformCircles(this.state.circleElements, pageX, pageY);
     }
+
+    if (this.state.activeCircle) {
+      this.moveActiveCircle(this.state.activeCircle.element, pageX, pageY);
+    }
+  }
+
+  onTouchMove = (event) => {
+    event = event.nativeEvent;
+
+    const { pageX, pageY } = event;
 
     if (this.state.activeCircle) {
       this.moveActiveCircle(this.state.activeCircle.element, pageX, pageY);
@@ -415,6 +442,10 @@ class App extends Component {
 
   throttledMouseMove = (event) => {
     _.throttle(this.onMouseMove.bind(this, event), 20)();
+  }
+
+  throttledTouchMove = (event) => {
+    _.throttle(this.onTouchMove.bind(this, event), 20)();
   }
 
   onMouseUp = (event) => {
@@ -913,7 +944,7 @@ class App extends Component {
     return (
       <div id="content" className="content"
       onMouseMove={ this.throttledMouseMove }
-      onTouchMove={ this.throttledMouseMove }
+      onTouchMove={ this.throttledTouchMove }
       onMouseDown={ this.onMouseDown }
       onTouchStart={ this.onMouseDown }
       onMouseUp={ this.onMouseUp }
