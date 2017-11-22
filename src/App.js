@@ -318,8 +318,9 @@ class App extends Component {
     _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
         this.getPointerCoordinatesFromCentre(x*3, y*3),
-        this.state.circles.length - index,
-        PARALLAX_AMOUNT_DIVISOR / 2,
+        // this.state.circles.length - index,
+        index,
+        PARALLAX_AMOUNT_DIVISOR,
       );
 
       circle.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`;
