@@ -413,6 +413,22 @@
   left: 15px;
 }
 
+.randomise-menu-icon {
+  z-index: 9999;
+  display: inline-block;
+  position: absolute;
+  top: 15px;
+  left: 54px;
+}
+
+.randomise-menu-icon--is-menu-open {
+  left: 15px;
+}
+
+.close-menu-icon__desktop-image {
+  display: none;
+}
+
 @media (min-width: 420px) {
   .menu {
     width: 300px;
@@ -428,6 +444,18 @@
 
   .close-menu-icon {
     top: 15px;
+  }
+
+  .close-menu-icon__mobile-image {
+    display: none;
+  }
+
+  .close-menu-icon__desktop-image {
+    display: block;
+  }
+
+  .randomise-menu-icon--is-menu-open {
+    left: 315px;
   }
 }
 
@@ -513,7 +541,8 @@
 }
 
 .close-menu-icon:hover,
-.open-menu-icon:hover {
+.open-menu-icon:hover,
+.randomise-menu-icon:hover {
   cursor: pointer;
   opacity: 0.5;
 }

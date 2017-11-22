@@ -15,7 +15,7 @@ const AVAILABLE_COLORS = {
   GREEN: '#5CFF80',
   LIGHT_BLUE: '#A2FFFB',
   DARK_BLUE: '#4692FF',
-  TEAL: '#9FFEC4',
+  DARKER_BLUE: '#0037D0',
   DARK_PURPLE: '#370078',
   PURPLE: '#A496FF',
   PINK: '#F7A2E0',
@@ -58,6 +58,12 @@ class App extends Component {
     window.addEventListener("resize", this.throttledWindowResize); // TODO: remove event listener on unmount
   }
 
+  componentDidUpdate() {
+    if (this.state.isMenuOpen && this.state.menuContentsScrollPosition) {
+      document.getElementById('menu-content').scrollTop = this.state.menuContentsScrollPosition;
+    }
+  }
+
   throttledWindowResize = () => {
     _.throttle(this.onWindowResize, 10)();
   }
@@ -81,8 +87,6 @@ class App extends Component {
       y: (window.innerHeight / 2) - positionY,
     };
   }
-
-  roundToTwo = (input) => _.round(input, 2);
 
   getTranslateAmountsFromCoordinates = (coordinates, multiplierFromZero, divisor) => {
     // multiplier comes from the counter, or the array index of a circle element, so
@@ -344,7 +348,16 @@ class App extends Component {
 
   onMouseDown = (event) => {
     if (!_.includes(event.target.classList, 'circle') && !_.includes(event.target.classList, 'no-circle')) {
-      this.setState({ activeCircle: null });
+      this.setState({
+        activeCircle: null,
+        menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
+      });
+    }
+
+    if (_.includes(event.target.classList, 'circle')) {
+      this.setState({
+        menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
+      });
     }
   }
 
@@ -406,6 +419,33 @@ class App extends Component {
     });
   }
 
+  getRandomValueFromValues = (values) => {
+    return values[Object.keys(values)[this.randomNumber(0, Object.keys(values).length)]];
+  };
+
+  randomiseSettings = () => {
+    this.setState({
+      backgroundColor1: this.getRandomValueFromValues(AVAILABLE_COLORS),
+      backgroundColor2: this.getRandomValueFromValues(AVAILABLE_COLORS),
+      backgroundAngle: this.getRandomValueFromValues(ANGLES),
+      circleColor1: this.getRandomValueFromValues(AVAILABLE_COLORS),
+      circleColor2: this.getRandomValueFromValues(AVAILABLE_COLORS),
+      circleColor3: this.getRandomValueFromValues(AVAILABLE_COLORS),
+      circleAngle: this.getRandomValueFromValues(ANGLES),
+      menuContentsScrollPosition: document.getElementById('menu-content') && document.getElementById('menu-content').scrollTop,
+    });
+  }
+
+  openMenu = () => {
+    this.setState(
+      (prevState) => {
+        return {
+          isMenuOpen: !this.state.isMenuOpen,
+        };
+      }
+    );
+  }
+
   render() {
     const circleClassNames = (size) => {
       return classNames('circle', {
@@ -436,6 +476,7 @@ class App extends Component {
           <img src="/menu-icon.svg"/>
           <img src="/close-icon.svg"/>
           <img src="/tick-icon.svg"/>
+          <img src="/randomise-icon.svg"/>
         </div>
       );
     }
@@ -457,6 +498,7 @@ class App extends Component {
                   console.log('onClick()');
                   this.setState({
                     [keyToChange]: color,
+                    menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
                   });
                 } }>
                   <img className="color-select__active-icon" src="/tick-icon.svg"/>
@@ -490,6 +532,7 @@ class App extends Component {
                 onClick={ () => {
                   this.setState({
                     [keyToChange]: angle,
+                    menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
                   });
                 } }>
                   <img className="angle-select__active-icon" src="/tick-icon.svg"/>
@@ -505,9 +548,9 @@ class App extends Component {
       return (
         <div className="menu no-circle">
 
-          <div className="menu__mobile-spacer"></div>
+          <div className="menu__mobile-spacer no-circle"></div>
 
-          <div className="menu__content no-circle">
+          <div className="menu__content no-circle" id="menu-content">
             {
               this.state.isMenuOpen ?
               <div className="close-menu-icon no-circle"
@@ -519,7 +562,10 @@ class App extends Component {
                 })
               } }>
                 <img src="/close-icon.svg"
-                className="no-circle"
+                className="close-menu-icon__desktop-image no-circle"
+                />
+                <img src="/close-icon-mobile.svg"
+                className="close-menu-icon__mobile-image no-circle"
                 />
               </div>
               : null
@@ -541,6 +587,7 @@ class App extends Component {
                   this.setState((prevState) => {
                     return {
                       isBackgroundColor1Toggled: !prevState.isBackgroundColor1Toggled,
+                      menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
                     };
                   });
                 } }
@@ -572,6 +619,7 @@ class App extends Component {
                   this.setState((prevState) => {
                     return {
                       isBackgroundColor2Toggled: !prevState.isBackgroundColor2Toggled,
+                      menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
                     };
                   });
                 } }
@@ -603,6 +651,7 @@ class App extends Component {
                   this.setState((prevState) => {
                     return {
                       isBackgroundAngleToggled: !prevState.isBackgroundAngleToggled,
+                      menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
                     };
                   });
                 } }
@@ -652,6 +701,7 @@ class App extends Component {
                   this.setState((prevState) => {
                     return {
                       isCircleColor1Toggled: !prevState.isCircleColor1Toggled,
+                      menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
                     };
                   });
                 } }
@@ -683,6 +733,7 @@ class App extends Component {
                   this.setState((prevState) => {
                     return {
                       isCircleColor2Toggled: !prevState.isCircleColor2Toggled,
+                      menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
                     };
                   });
                 } }
@@ -714,6 +765,7 @@ class App extends Component {
                   this.setState((prevState) => {
                     return {
                       isCircleColor3Toggled: !prevState.isCircleColor3Toggled,
+                      menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
                     };
                   });
                 } }
@@ -745,6 +797,7 @@ class App extends Component {
                   this.setState((prevState) => {
                     return {
                       isCircleAngleToggled: !prevState.isCircleAngleToggled,
+                      menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
                     };
                   });
                 } }
@@ -781,6 +834,29 @@ class App extends Component {
                   <AngleSelect keyToChange='circleAngle'/>
                   : null
                 }
+              </div>
+            </div>
+
+            <div className="menu__section no-circle">
+              <div className="menu__section-item no-circle">
+                <div onClick={ this.randomiseSettings }
+                className="menu__section-item-title no-circle">
+                  Randomise settings
+                </div>
+              </div>
+
+              <div className="menu__section-item no-circle">
+                <div onClick={ () => {
+                  this.setState((prevState) => {
+                    return {
+                      isRandomiseShortcutVisible: !prevState.isRandomiseShortcutVisible,
+                      menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
+                    };
+                  });
+                } }
+                className="menu__section-item-title no-circle">
+                  { this.state.isRandomiseShortcutVisible ? 'Hide' : 'Show' } randomise shortcut
+                </div>
               </div>
             </div>
           </div>
@@ -821,14 +897,21 @@ class App extends Component {
           style={ {
             zIndex: 9999, display: 'inline-block', position: 'absolute', top: 15, left: 15,
           }}
-          onClick={ () => {
-            this.setState((prevState) => {
-              return {
-                isMenuOpen: !this.state.isMenuOpen,
-              };
-            })
-          } }>
+          onClick={ this.openMenu }>
             <img src="/menu-icon.svg"
+            className="no-circle"
+            />
+          </div>
+          : null
+        }
+
+        {
+          this.state.isRandomiseShortcutVisible ?
+          <div className={ classNames('randomise-menu-icon no-circle', {
+            'randomise-menu-icon--is-menu-open': this.state.isMenuOpen,
+          }) }
+          onClick={ this.randomiseSettings }>
+            <img src="/randomise-icon.svg"
             className="no-circle"
             />
           </div>
