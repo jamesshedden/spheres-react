@@ -102,7 +102,7 @@ class App extends Component {
       if (x >  90) { x =  90};
       if (x < -90) { x = -90};
 
-      this.transformCircles(this.state.circleElements, x, y);
+      this.transformCircles(this.state.circleElements, y, x);
     }
   }
 
