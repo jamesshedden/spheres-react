@@ -91,6 +91,12 @@ class App extends Component {
   onDeviceOrientation = (event) => {
     if (this.state.circleElements.length && window.IS_TOUCH_USER) {
       let { beta, gamma } = event;
+
+      this.setState({
+        deviceOrientationBeta: beta,
+        deviceOrientationGamma: gamma,
+      });
+
       this.transformCirclesWithOrientation(this.state.circleElements, Math.round(beta), Math.round(gamma));
     }
   }
@@ -141,7 +147,10 @@ class App extends Component {
     } else if (!coordinates && deviceOrientationValues) {
       // GAMMA & BETA get reversed here to affect the opposite axis
       translateX = (deviceOrientationValues.gamma * DEVICE_ORIENTATION_MULTIPLIER * multiplier) / parallaxDivisor;
-      translateY = (deviceOrientationValues.beta * DEVICE_ORIENTATION_MULTIPLIER * multiplier) / parallaxDivisor;;
+      translateY = (deviceOrientationValues.beta * DEVICE_ORIENTATION_MULTIPLIER * multiplier) / parallaxDivisor;
+    } else if (coordinates && deviceOrientationValues) {
+      translateX = (coordinates.x * deviceOrientationValues.gamma * DEVICE_ORIENTATION_MULTIPLIER * multiplier) / parallaxDivisor;
+      translateY = (coordinates.y * deviceOrientationValues.beta * DEVICE_ORIENTATION_MULTIPLIER * multiplier) / parallaxDivisor;
     }
 
     return {
@@ -327,6 +336,7 @@ class App extends Component {
       this.getPointerCoordinatesFromCentre(pageX, pageY),
       activeCircleIndex,
       PARALLAX_AMOUNT_DIVISOR,
+      { beta: this.state.deviceOrientationBeta, gamma: this.state.deviceOrientationGamma }
     );
 
     let { top, left } = this.getPosition(
