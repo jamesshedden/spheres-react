@@ -102,20 +102,19 @@ class App extends Component {
 
   onDeviceOrientation = (event) => {
     if (this.state.circleElements.length && this.state.isTouchUser) {
-      let x = event.beta;
-      let y = event.gamma;
+      let { beta, gamma } = event;
 
       // Because we don't want to have the device upside down
       // We constrain the x value to the range [-90,90]
-      if (x >  90) { x =  90};
-      if (x < -90) { x = -90};
+      if (beta >  90) { beta =  90};
+      if (beta < -90) { beta = -90};
 
       this.setState({
-        deviceOrientationBeta: x,
-        deviceOrientationGamma: y,
+        deviceOrientationBeta: beta,
+        deviceOrientationGamma: gamma,
       });
 
-      this.transformCirclesWithOrientation(this.state.circleElements, y, x);
+      this.transformCirclesWithOrientation(this.state.circleElements, beta, gamma);
     }
   }
 
@@ -143,7 +142,29 @@ class App extends Component {
     };
   }
 
-  getTranslateAmountsFromCoordinates = (coordinates, multiplierFromZero, parallaxDivisor) => {
+  getTranslateAmountsFromCoordinates = (
+    coordinates,
+    multiplierFromZero,
+    parallaxDivisor,
+    deviceOrientationValues
+  ) => {
+    // TODO:
+    // when creating circles and device orientation is in use, we need to know
+    // not only the coordinates that the user chose to put the circle, but also
+    // the device orientation values in order to know how to correctly transform it.
+    //
+    // when we create a circle with a click, we know 2 things from the position of the mouse:
+    // - where the sphere should be created
+    // - what 'viewpoint' we're viewing from (based on cursor position)
+    //
+    // with both these things we can do what we need to know how much the sphere
+    // should be transformed in order to appear correctly in 3d space.
+    //
+    // however, when we create a circle with touch & device orientation, these two
+    // things are now separate:
+    // - the touch says where the sphere should be created
+    // - the device orientation provides the 'viewpoint'
+
     // multiplier comes from the counter, or the array index of a circle element, so
     // will sometimes be 0 or 1 but we don't want to multiply by these
     const MULTIPLIER_BUFFER = 2;
@@ -153,17 +174,13 @@ class App extends Component {
     let translateX;
     let translateY;
 
-    // for now we want to set the divisor to null whenever we detect the movement
-    // is coming from a touch event, as parallax currently doesn't work on
-    // tablets/phones so we don't want to account for the parallax divisor
-    //
-    // therefore we have a case for when it's falsy
-    if (PARALLAX_AMOUNT_DIVISOR !== 0) {
-      translateX = (coordinates.x * (multiplier)) / parallaxDivisor;
-      translateY = (coordinates.y * (multiplier)) / parallaxDivisor;
-    } else {
-      translateX = coordinates.x;
-      translateY = coordinates.y;
+    if (deviceOrientationValues) {
+      const { beta, gamma } = deviceOrientationValues;
+      translateX = (coordinates.x * gamma * multiplier) / parallaxDivisor;
+      translateY = (coordinates.y * beta * multiplier) / parallaxDivisor;
+    } else if (coordinates) {
+      translateX = (coordinates.x * multiplier) / parallaxDivisor;
+      translateY = (coordinates.y * multiplier) / parallaxDivisor;
     }
 
     return {
@@ -268,26 +285,25 @@ class App extends Component {
     // should come from transforms.
     //
 
-    let xForGetPointerCoordinatesFromCentre;
-    let yForGetPointerCoordinatesFromCentre;
+    // let xForGetPointerCoordinatesFromCentre;
+    // let yForGetPointerCoordinatesFromCentre;
 
-    if (this.state.isDeviceOrientationUser && this.state.isTouchUser) {
-      xForGetPointerCoordinatesFromCentre = this.state.deviceOrientationGamma*3;
-      yForGetPointerCoordinatesFromCentre = this.state.deviceOrientationBeta*3;
-    } else {
-      xForGetPointerCoordinatesFromCentre = pageX;
-      yForGetPointerCoordinatesFromCentre = pageY;
-    }
+    // NOTE: DEVICE ORIENTATION
+    // for device orientation, we don't care about pointer coordinates — we care about
+    // the gamma & beta values, which represent the altered 'viewpoint' on the x & y axis,
+    // in the same way the pointer coordinates normally represent the 'viewpoint' on
+    // desktop
+    // if (this.state.isDeviceOrientationUser && this.state.isTouchUser) {
+    //   xForGetPointerCoordinatesFromCentre = this.state.deviceOrientationGamma*3;
+    //   yForGetPointerCoordinatesFromCentre = this.state.deviceOrientationBeta*3;
+    // } else {
+    //   xForGetPointerCoordinatesFromCentre = pageX;
+    //   yForGetPointerCoordinatesFromCentre = pageY;
+    // }
 
     const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
-      // TODO: DEVICE ORIENTATION
-      // for device orientation, we don't care about pointer coordinates — we care about
-      // the gamma & beta values, which represent the altered 'viewpoint' on the x & y axis,
-      // in the same way the pointer coordinates normally represent the 'viewpoint' on
-      // desktop
       this.getPointerCoordinatesFromCentre(
-        xForGetPointerCoordinatesFromCentre,
-        yForGetPointerCoordinatesFromCentre
+        pageX, pageY
       ),
       multiplierForTranslateAmounts,
       PARALLAX_AMOUNT_DIVISOR,
@@ -368,12 +384,13 @@ class App extends Component {
     });
   }
 
-  transformCirclesWithOrientation = (circles, x, y) => {
+  transformCirclesWithOrientation = (circles, beta, gamma) => {
     _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
-        this.getPointerCoordinatesFromCentre(x*3, y*3),
+        {},
         index,
         PARALLAX_AMOUNT_DIVISOR,
+        { beta, gamma }
       );
 
       circle.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`;
