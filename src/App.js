@@ -91,6 +91,10 @@ class App extends Component {
   onDeviceOrientation = (event) => {
     if (this.state.circleElements.length && window.IS_TOUCH_USER) {
       let { beta, gamma } = event;
+
+      if (beta > 80) beta = 80;
+      if (beta < -80) beta = 80;
+
       this.transformCirclesWithOrientation(this.state.circleElements, beta, gamma);
     }
   }
@@ -139,6 +143,7 @@ class App extends Component {
       translateX = (coordinates.x * multiplier) / parallaxDivisor;
       translateY = (coordinates.y * multiplier) / parallaxDivisor;
     } else if (!coordinates && deviceOrientationValues) {
+      console.log(`deviceOrientationValues:`, deviceOrientationValues);
       // GAMMA & BETA get reversed here to affect the opposite axis
       translateX = (deviceOrientationValues.gamma * multiplier) / parallaxDivisor;
       translateY = (deviceOrientationValues.beta * multiplier) / parallaxDivisor;
