@@ -179,6 +179,7 @@ class App extends Component {
         this.getPointerCoordinatesFromCentre(pageX, pageY),
         index - 1,
         PARALLAX_AMOUNT_DIVISOR,
+        { beta: this.state.deviceOrientationBeta, gamma: this.state.deviceOrientationGamma }
       );
 
       let top = circle.totals.vertical - translateY;
