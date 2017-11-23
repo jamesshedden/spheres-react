@@ -7,6 +7,7 @@ import './App.css';
 
 const MAX_CIRCLE_AMOUNT = 10;
 let PARALLAX_AMOUNT_DIVISOR = 80;
+const DEVICE_ORIENTATION_MULTIPLIER = 3;
 
 const AVAILABLE_COLORS = {
   RED: '#FF5130',
@@ -141,12 +142,12 @@ class App extends Component {
     let translateY;
 
     if (coordinates && !deviceOrientationValues) {
-      translateX = (coordinates.x * (multiplier)) / parallaxDivisor;
-      translateY = (coordinates.y * (multiplier)) / parallaxDivisor;
+      translateX = (coordinates.x * multiplier) / parallaxDivisor;
+      translateY = (coordinates.y * multiplier) / parallaxDivisor;
     } else if (!coordinates && deviceOrientationValues) {
       // GAMMA & BETA get reversed here to affect the opposite axis
-      translateX = (deviceOrientationValues.gamma * (multiplier)) / parallaxDivisor;
-      translateY = (deviceOrientationValues.beta * (multiplier)) / parallaxDivisor;
+      translateX = (deviceOrientationValues.gamma * multiplier) / parallaxDivisor;
+      translateY = (deviceOrientationValues.beta * multiplier) / parallaxDivisor;
     }
 
     return {
@@ -321,8 +322,8 @@ class App extends Component {
         index,
         PARALLAX_AMOUNT_DIVISOR,
         {
-          beta: beta*2.5,
-          gamma: gamma* 2.5,
+          beta: beta * DEVICE_ORIENTATION_MULTIPLIER,
+          gamma: gamma * DEVICE_ORIENTATION_MULTIPLIER,
         }
       );
 
