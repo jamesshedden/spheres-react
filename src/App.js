@@ -136,16 +136,18 @@ class App extends Component {
     // will sometimes be 0 or 1 but we don't want to multiply by these
     const MULTIPLIER_BUFFER = 2;
 
+    console.log(`getTranslateAmountsFromCoordinates(): coordinates, multiplierFromZero, parallaxDivisor, deviceOrientationValues:`, coordinates, multiplierFromZero, parallaxDivisor, deviceOrientationValues);
+
     const multiplier = multiplierFromZero + MULTIPLIER_BUFFER
 
     let translateX = (
-      (_.get(deviceOrientationValues, 'gamma', 0) * DEVICE_ORIENTATION_MULTIPLIER)
+      _.get(deviceOrientationValues, 'gamma', 0)
       + _.get(coordinates, 'x', 0)
       * multiplier
     ) / parallaxDivisor;
 
     let translateY = (
-      (_.get(deviceOrientationValues, 'beta', 0) * DEVICE_ORIENTATION_MULTIPLIER)
+      _.get(deviceOrientationValues, 'beta', 0)
       + _.get(coordinates, 'y', 0)
       * multiplier
     ) / parallaxDivisor;
@@ -157,6 +159,7 @@ class App extends Component {
   }
 
   repositionCircles = (circles, pageX, pageY) => {
+    console.log('repositionCircles()');
     let totals = _.map(circles, (circle, index) => {
       let el = document.getElementById(`circle-${ circle.id }`);
       let { top, left } = circle;
@@ -175,11 +178,17 @@ class App extends Component {
     circles = _.merge([], circles, totals);
 
     let repositionedCircles = _.map(circles, (circle, index) => {
+
+      console.log(`circle.top, circle.left:`, circle.top, circle.left);
+
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
         this.getPointerCoordinatesFromCentre(pageX, pageY),
         index - 1,
         PARALLAX_AMOUNT_DIVISOR,
-        { beta: this.state.deviceOrientationBeta, gamma: this.state.deviceOrientationGamma }
+        {
+          beta: this.state.deviceOrientationBeta - this.getPointerCoordinatesFromCentre(pageX, pageY).y, 
+          gamma: this.state.deviceOrientationGamma - this.getPointerCoordinatesFromCentre(pageX, pageY).x
+        }
       );
 
       let top = circle.totals.vertical - translateY;
@@ -953,7 +962,7 @@ class App extends Component {
       onMouseDown={ this.onMouseDown }
       onTouchStart={ this.onMouseDown }
       onMouseUp={ this.onMouseUp }
-      onTouchEnd={ this.onMouseUp }
+      // onTouchEnd={ this.onMouseUp } // TODO: Reinstate!!!
       style={ {
         height: '100%',
         background: `
