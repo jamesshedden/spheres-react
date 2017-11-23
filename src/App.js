@@ -91,12 +91,6 @@ class App extends Component {
   onDeviceOrientation = (event) => {
     if (this.state.circleElements.length && window.IS_TOUCH_USER) {
       let { beta, gamma } = event;
-
-      // Because we don't want to have the device upside down
-      // We constrain the x value to the range [-90,90]
-      if (beta >  90) { beta =  90};
-      if (beta < -90) { beta = -90};
-
       this.transformCirclesWithOrientation(this.state.circleElements, beta, gamma);
     }
   }
