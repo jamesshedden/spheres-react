@@ -313,13 +313,13 @@ class App extends Component {
     });
   }
 
-  transformCirclesWithOrientation = (circles, gamma) => {
+  transformCirclesWithOrientation = (circles, beta, gamma) => {
     _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
         null,
         index,
         PARALLAX_AMOUNT_DIVISOR,
-        gamma
+        { beta, gamma }
       );
 
       circle.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`;
