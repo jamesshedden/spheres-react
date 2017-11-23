@@ -138,20 +138,17 @@ class App extends Component {
 
     const multiplier = multiplierFromZero + MULTIPLIER_BUFFER
 
-    let translateX;
-    let translateY;
+    let translateX = (
+      (_.get(deviceOrientationValues, 'gamma', 0) * DEVICE_ORIENTATION_MULTIPLIER)
+      + _.get(coordinates, 'x', 0)
+      * multiplier
+    ) / parallaxDivisor;
 
-    if (coordinates && !deviceOrientationValues) {
-      translateX = (coordinates.x * multiplier) / parallaxDivisor;
-      translateY = (coordinates.y * multiplier) / parallaxDivisor;
-    } else if (!coordinates && deviceOrientationValues) {
-      // GAMMA & BETA get reversed here to affect the opposite axis
-      translateX = (deviceOrientationValues.gamma * DEVICE_ORIENTATION_MULTIPLIER * multiplier) / parallaxDivisor;
-      translateY = (deviceOrientationValues.beta * DEVICE_ORIENTATION_MULTIPLIER * multiplier) / parallaxDivisor;
-    } else if (coordinates && deviceOrientationValues) {
-      translateX = (coordinates.x * deviceOrientationValues.gamma * DEVICE_ORIENTATION_MULTIPLIER * multiplier) / parallaxDivisor;
-      translateY = (coordinates.y * deviceOrientationValues.beta * DEVICE_ORIENTATION_MULTIPLIER * multiplier) / parallaxDivisor;
-    }
+    let translateY = (
+      (_.get(deviceOrientationValues, 'beta', 0) * DEVICE_ORIENTATION_MULTIPLIER)
+      + _.get(coordinates, 'y', 0)
+      * multiplier
+    ) / parallaxDivisor;
 
     return {
       translateX,
