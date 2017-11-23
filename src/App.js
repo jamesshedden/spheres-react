@@ -91,6 +91,12 @@ class App extends Component {
   onDeviceOrientation = (event) => {
     if (this.state.circleElements.length && window.IS_TOUCH_USER) {
       let { beta, gamma } = event;
+
+      if (beta > 50) beta = 50;
+      if (gamma > 50) gamma = 50;
+      if (beta < -50) beta = -50;
+      if (gamma < -50) gamma = -50;
+      
       this.transformCirclesWithOrientation(this.state.circleElements, Math.round(beta), Math.round(gamma));
     }
   }
