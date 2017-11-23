@@ -40,17 +40,19 @@ class App extends Component {
 
     this.state = {
       circles: [],
-      backgroundColor1: AVAILABLE_COLORS.ORANGE,
-      backgroundColor2: AVAILABLE_COLORS.DARK_PURPLE,
-      backgroundAngle: ANGLES[45],
-      circleColor1: AVAILABLE_COLORS.RED,
-      circleColor2: AVAILABLE_COLORS.PURPLE,
-      circleColor3: AVAILABLE_COLORS.GREEN,
-      circleAngle: ANGLES[225],
+      backgroundColor1: window.localStorage.getItem('spheres.backgroundColor1') || AVAILABLE_COLORS.ORANGE,
+      backgroundColor2: window.localStorage.getItem('spheres.backgroundColor2') || AVAILABLE_COLORS.DARK_PURPLE,
+      backgroundAngle: window.localStorage.getItem('spheres.backgroundAngle') || ANGLES[45],
+      circleColor1: window.localStorage.getItem('spheres.circleColor1') || AVAILABLE_COLORS.RED,
+      circleColor2: window.localStorage.getItem('spheres.circleColor2') || AVAILABLE_COLORS.PURPLE,
+      circleColor3: window.localStorage.getItem('spheres.circleColor3') || AVAILABLE_COLORS.GREEN,
+      circleAngle: window.localStorage.getItem('spheres.circleAngle') || ANGLES[225],
       activeCircle: null,
       stars: [],
       circleElements: [],
       sphereCount: 0,
+      isMenuOpen: window.localStorage.getItem('spheres.isMenuOpen') === 'true' ? true : false,
+      isRandomiseShortcutVisible: window.localStorage.getItem('spheres.isRandomiseShortcutVisible') === 'true' ? true : false,
     };
   }
 
@@ -298,7 +300,6 @@ class App extends Component {
   }
 
   transformCircles = (circles, event) => {
-    console.log('transformCircles()');
     let { pageX, pageY } = event;
 
     _.forEach(circles, (circle, index) => {
@@ -313,7 +314,6 @@ class App extends Component {
   }
 
   transformCirclesWithOrientation = (circles, beta, gamma) => {
-    console.log('transformCirclesWithOrientation()');
     _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
         null,
@@ -512,17 +512,41 @@ class App extends Component {
       circleColor3: this.getRandomValueFromValues(AVAILABLE_COLORS),
       circleAngle: this.getRandomValueFromValues(ANGLES),
       menuContentsScrollPosition: document.getElementById('menu-content') && document.getElementById('menu-content').scrollTop,
+    }, () => {
+      window.localStorage.setItem('spheres.backgroundColor1', this.state.backgroundColor1);
+      window.localStorage.setItem('spheres.backgroundColor2', this.state.backgroundColor2);
+      window.localStorage.setItem('spheres.backgroundAngle', this.state.backgroundAngle);
+      window.localStorage.setItem('spheres.circleColor1', this.state.circleColor1);
+      window.localStorage.setItem('spheres.circleColor2', this.state.circleColor2);
+      window.localStorage.setItem('spheres.circleColor3', this.state.circleColor3);
+      window.localStorage.setItem('spheres.circleAngle', this.state.circleAngle);
     });
   }
 
   openMenu = () => {
-    this.setState(
-      (prevState) => {
-        return {
-          isMenuOpen: !this.state.isMenuOpen,
-        };
-      }
-    );
+    this.setState({ isMenuOpen: true });
+    window.localStorage.setItem('spheres.isMenuOpen', true);
+  }
+
+  closeMenu = () => {
+    this.setState({ isMenuOpen: false });
+    window.localStorage.setItem('spheres.isMenuOpen', false);
+  }
+
+  toggleRandomiseShortcut = () => {
+    if (this.state.isRandomiseShortcutVisible) {
+      this.setState({
+        isRandomiseShortcutVisible: false
+      });
+
+      window.localStorage.setItem('spheres.isRandomiseShortcutVisible', false);
+    } else {
+      this.setState({
+        isRandomiseShortcutVisible: true
+      });
+
+      window.localStorage.setItem('spheres.isRandomiseShortcutVisible', true);
+    }
   }
 
   render() {
@@ -575,9 +599,11 @@ class App extends Component {
                   this.setState({
                     [keyToChange]: color,
                     menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
+                  }, () => {
+                    window.localStorage.setItem(`spheres.${keyToChange}`, color);
                   });
                 } }>
-                  <img className="color-select__active-icon" src="/tick-icon.svg"/>
+                  <img alt="" className="color-select__active-icon" src="/tick-icon.svg"/>
                 </div>
               );
             })
@@ -609,9 +635,11 @@ class App extends Component {
                   this.setState({
                     [keyToChange]: angle,
                     menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
+                  }, () => {
+                    window.localStorage.setItem(`spheres.${keyToChange}`, angle);
                   });
                 } }>
-                  <img className="angle-select__active-icon" src="/tick-icon.svg"/>
+                  <img alt="" className="angle-select__active-icon" src="/tick-icon.svg"/>
                 </div>
               );
             })
@@ -624,19 +652,14 @@ class App extends Component {
       return (
         <div className="menu no-circle">
 
-          <div className="menu__mobile-spacer no-circle"></div>
+          <div className="menu__mobile-spacer no-circle"
+          onClick={ this.closeMenu } />
 
           <div className="menu__content no-circle" id="menu-content">
             {
               this.state.isMenuOpen ?
               <div className="close-menu-icon no-circle"
-              onClick={ () => {
-                this.setState((prevState) => {
-                  return {
-                    isMenuOpen: !this.state.isMenuOpen,
-                  };
-                })
-              } }>
+              onClick={ this.closeMenu }>
                 <img src="/close-icon.svg"
                 className="close-menu-icon__desktop-image no-circle"
                 />
@@ -649,7 +672,6 @@ class App extends Component {
 
             <div className="menu__title no-circle">
               <div className="menu__title-sphere no-circle"></div>
-
               Spheres
             </div>
 
@@ -663,9 +685,8 @@ class App extends Component {
 
               <div className="menu__section-item no-circle"
               onClick={ () => {
-                console.log('onClick()');
+                this.toggleRandomiseShortcut();
                 this.setState({
-                  isRandomiseShortcutVisible: !this.state.isRandomiseShortcutVisible,
                   menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
                 });
               } }>
@@ -936,6 +957,21 @@ class App extends Component {
                   <AngleSelect keyToChange='circleAngle'/>
                   : null
                 }
+              </div>
+            </div>
+
+            <div className="menu__section menu__section--credit no-circle">
+              <div className="menu__section-item no-circle">
+                <div className="menu__section-item-title no-circle">
+                  A thing by&nbsp;
+                  <a
+                  className="credit-link no-circle"
+                  href="http://james.sh"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                    James Shedden
+                  </a>
+                </div>
               </div>
             </div>
 

@@ -429,7 +429,7 @@
   display: none;
 }
 
-@media (min-width: 420px) {
+@media (min-width: 500px) {
   .menu {
     width: 300px;
   }
@@ -469,6 +469,21 @@
 
 .menu__section-item:last-child {
   border-bottom: 1px solid #DBDBDB;
+}
+
+.menu__section--credit .menu__section-item {
+  border: 0;
+  text-align: center;
+}
+
+.menu__section--credit {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.menu__section--credit .menu__section-item:hover {
+  background: transparent;
+  cursor: default;
 }
 
 .menu__section-title {
@@ -535,7 +550,7 @@
   /*opacity: 0.5;*/
 }
 
-@media (min-width: 420px) {
+@media (min-width: 500px) {
   .close-menu-icon:hover,
   .open-menu-icon:hover,
   .randomise-menu-icon:hover {
@@ -546,5 +561,16 @@
   .menu__section-item:hover {
     cursor: pointer;
     background: #F9F9F9;
+  }
+}
+
+.credit-link {
+  text-decoration: underline;
+  color: black;
+}
+
+@media (min-width: 500px) {
+  .credit-link:hover {
+    text-decoration: none;
   }
 }
