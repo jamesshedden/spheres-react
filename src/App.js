@@ -90,14 +90,8 @@ class App extends Component {
 
   onDeviceOrientation = (event) => {
     if (this.state.circleElements.length && window.IS_TOUCH_USER) {
-      let { beta, gamma } = event;
-
-      if (beta > 50) beta = 50;
-      if (gamma > 50) gamma = 50;
-      if (beta < -50) beta = -50;
-      if (gamma < -50) gamma = -50;
-      
-      this.transformCirclesWithOrientation(this.state.circleElements, Math.round(beta), Math.round(gamma));
+      let { gamma } = event;
+      this.transformCirclesWithOrientation(this.state.circleElements, Math.round(gamma));
     }
   }
 
@@ -131,7 +125,7 @@ class App extends Component {
     };
   }
 
-  getTranslateAmountsFromCoordinates = (coordinates, multiplierFromZero, parallaxDivisor, deviceOrientationValues) => {
+  getTranslateAmountsFromCoordinates = (coordinates, multiplierFromZero, parallaxDivisor, deviceOrientationGamma) => {
     // multiplier comes from the counter, or the array index of a circle element, so
     // will sometimes be 0 or 1 but we don't want to multiply by these
     const MULTIPLIER_BUFFER = 2;
@@ -141,14 +135,14 @@ class App extends Component {
     let translateX;
     let translateY;
 
-    if (coordinates && !deviceOrientationValues) {
+    if (coordinates && !deviceOrientationGamma) {
       translateX = (coordinates.x * multiplier) / parallaxDivisor;
       translateY = (coordinates.y * multiplier) / parallaxDivisor;
-    } else if (!coordinates && deviceOrientationValues) {
-      console.log(`deviceOrientationValues:`, deviceOrientationValues);
+    } else if (!coordinates && deviceOrientationGamma) {
+      console.log(`deviceOrientationGamma:`, deviceOrientationGamma);
       // GAMMA & BETA get reversed here to affect the opposite axis
-      translateX = (deviceOrientationValues.gamma * multiplier) / parallaxDivisor;
-      translateY = (deviceOrientationValues.beta * multiplier) / parallaxDivisor;
+      translateX = (deviceOrientationGamma * DEVICE_ORIENTATION_MULTIPLIER * multiplier) / parallaxDivisor;
+      translateY = 0;
     }
 
     return {
@@ -315,17 +309,13 @@ class App extends Component {
     });
   }
 
-  transformCirclesWithOrientation = (circles, beta, gamma) => {
-    console.log('transformCirclesWithOrientation()');
+  transformCirclesWithOrientation = (circles, gamma) => {
     _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
         null,
         index,
         PARALLAX_AMOUNT_DIVISOR,
-        {
-          beta: beta * DEVICE_ORIENTATION_MULTIPLIER,
-          gamma: gamma * DEVICE_ORIENTATION_MULTIPLIER,
-        }
+        gamma
       );
 
       circle.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`;
