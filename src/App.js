@@ -300,13 +300,21 @@ class App extends Component {
     //   xForGetPointerCoordinatesFromCentre = pageX;
     //   yForGetPointerCoordinatesFromCentre = pageY;
     // }
+    //
+    const IS_ORIENTATION_AND_TOUCH_USER = this.state.isTouchUser && this.state.isDeviceOrientationUser;
 
     const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
-      this.getPointerCoordinatesFromCentre(
-        pageX, pageY
-      ),
+      !IS_ORIENTATION_AND_TOUCH_USER
+        ? this.getPointerCoordinatesFromCentre(pageX, pageY)
+        : null,
       multiplierForTranslateAmounts,
       PARALLAX_AMOUNT_DIVISOR,
+      IS_ORIENTATION_AND_TOUCH_USER
+        ? {
+            beta: this.state.deviceOrientationBeta,
+            gamma: this.state.deviceOrientationGamma,
+          }
+        : null,
     );
 
     // get random 'color index' — this can refer to color 1, 2 and 3 — the colours
@@ -387,7 +395,7 @@ class App extends Component {
   transformCirclesWithOrientation = (circles, beta, gamma) => {
     _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
-        {},
+        null,
         index,
         PARALLAX_AMOUNT_DIVISOR,
         { beta, gamma }
