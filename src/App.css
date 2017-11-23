@@ -467,11 +467,6 @@
   border-top: 1px solid #DBDBDB;
 }
 
-.menu__section-item:hover {
-  cursor: pointer;
-  background: #F9F9F9;
-}
-
 .menu__section-item:last-child {
   border-bottom: 1px solid #DBDBDB;
 }
@@ -540,9 +535,16 @@
   /*opacity: 0.5;*/
 }
 
-.close-menu-icon:hover,
-.open-menu-icon:hover,
-.randomise-menu-icon:hover {
-  cursor: pointer;
-  opacity: 0.5;
+@media (min-width: 420px) {
+  .close-menu-icon:hover,
+  .open-menu-icon:hover,
+  .randomise-menu-icon:hover {
+    cursor: pointer;
+    opacity: 0.5;
+  }
+
+  .menu__section-item:hover {
+    cursor: pointer;
+    background: #F9F9F9;
+  }
 }
