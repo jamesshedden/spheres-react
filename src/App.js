@@ -319,7 +319,10 @@ class App extends Component {
         null,
         index,
         PARALLAX_AMOUNT_DIVISOR,
-        { beta, gamma }
+        {
+          beta: beta*2.5,
+          gamma: gamma* 2.5,
+        }
       );
 
       circle.style.transform = `translateX(${ translateX }px) translateY(${ translateY }px)`;
