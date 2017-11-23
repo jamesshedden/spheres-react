@@ -174,16 +174,17 @@ class App extends Component {
     let translateX;
     let translateY;
 
+
     if (deviceOrientationValues && coordinates) {
       const { beta, gamma } = deviceOrientationValues;
-      alert(`deviceOrientationValues && coordinates: beta, gamma:`, beta, gamma);
+      alert(`deviceOrientationValues && coordinates: this.state.deviceOrientationBeta, this.state.deviceOrientationGamma:`, this.state.deviceOrientationBeta, this.state.deviceOrientationGamma);
 
       translateX = (coordinates.x * gamma * multiplier) / parallaxDivisor;
       translateY = (coordinates.y * beta * multiplier) / parallaxDivisor;
     } else if (deviceOrientationValues && !coordinates) {
       const { beta, gamma } = deviceOrientationValues;
-      alert(`deviceOrientationValues && !coordinates: beta, gamma:`, beta, gamma);
-
+      alert(`deviceOrientationValues && !coordinates: this.state.deviceOrientationBeta, this.state.deviceOrientationGamma:`, this.state.deviceOrientationBeta, this.state.deviceOrientationGamma);
+      
       translateX = (gamma * multiplier) / parallaxDivisor;
       translateY = (beta * multiplier) / parallaxDivisor;
     } else if (!deviceOrientationValues && coordinates) {
