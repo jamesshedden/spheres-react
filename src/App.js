@@ -547,15 +547,13 @@ class App extends Component {
           position: 'absolute',
           top: '-9999px',
           left: '-9999px',
-          background: `
-            url('/dots-texture-dark-transparent.png'),
-            url('/dots-texture-light.jpg')
-          `
         } }>
-          <img src="/menu-icon.svg"/>
-          <img src="/close-icon.svg"/>
-          <img src="/tick-icon.svg"/>
-          <img src="/randomise-icon.svg"/>
+          <img alt="" src="/dots-texture-light.jpg"/>
+          <img alt="" src="/dots-texture-dark-transparent.png"/>
+          <img alt="" src="/menu-icon.svg"/>
+          <img alt="" src="/close-icon.svg"/>
+          <img alt="" src="/tick-icon.svg"/>
+          <img alt="" src="/randomise-icon.svg"/>
         </div>
       );
     }
@@ -663,17 +661,20 @@ class App extends Component {
                 </div>
               </div>
 
-              <div className="menu__section-item no-circle">
-                <div onClick={ () => {
-                  this.setState((prevState) => {
-                    return {
-                      isRandomiseShortcutVisible: !prevState.isRandomiseShortcutVisible,
-                      menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
-                    };
-                  });
-                } }
-                className="menu__section-item-title no-circle">
-                  { this.state.isRandomiseShortcutVisible ? 'Hide' : 'Show' } randomise shortcut
+              <div className="menu__section-item no-circle"
+              onClick={ () => {
+                console.log('onClick()');
+                this.setState({
+                  isRandomiseShortcutVisible: !this.state.isRandomiseShortcutVisible,
+                  menuContentsScrollPosition: document.getElementById('menu-content').scrollTop,
+                });
+              } }>
+                <div className="menu__section-item-title no-circle">
+                  {
+                    this.state.isRandomiseShortcutVisible
+                      ? 'Hide randomise shortcut'
+                      : 'Show randomise shortcut'
+                  }
                 </div>
               </div>
             </div>
@@ -972,29 +973,29 @@ class App extends Component {
       >
         {
           !this.state.isMenuOpen ?
-          <div className="open-menu-icon no-circle"
-          style={ {
-            zIndex: 9999, display: 'inline-block', position: 'absolute', top: 15, left: 15,
-          }}
-          onClick={ this.openMenu }>
-            <img src="/menu-icon.svg"
-            className="no-circle"
-            />
-          </div>
-          : null
+            <div className="open-menu-icon no-circle"
+            style={ {
+              zIndex: 9999, display: 'inline-block', position: 'absolute', top: 15, left: 15,
+            }}
+            onClick={ this.openMenu }>
+              <img alt="" src="/menu-icon.svg"
+              className="no-circle"
+              />
+            </div>
+            : null
         }
 
         {
           this.state.isRandomiseShortcutVisible ?
-          <div className={ classNames('randomise-menu-icon no-circle', {
-            'randomise-menu-icon--is-menu-open': this.state.isMenuOpen,
-          }) }
-          onClick={ this.randomiseSettings }>
-            <img src="/randomise-icon.svg"
-            className="no-circle"
-            />
-          </div>
-          : null
+            <div className={ classNames('randomise-menu-icon no-circle', {
+              'randomise-menu-icon--is-menu-open': this.state.isMenuOpen,
+            }) }
+            onClick={ this.randomiseSettings }>
+              <img alt="" src="/randomise-icon.svg"
+              className="no-circle"
+              />
+            </div>
+            : null
         }
 
         {
