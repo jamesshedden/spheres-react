@@ -174,11 +174,17 @@ class App extends Component {
     let translateX;
     let translateY;
 
-    if (deviceOrientationValues) {
+    if (deviceOrientationValues && coordinates) {
       const { beta, gamma } = deviceOrientationValues;
+      
       translateX = (coordinates.x * gamma * multiplier) / parallaxDivisor;
       translateY = (coordinates.y * beta * multiplier) / parallaxDivisor;
-    } else if (coordinates) {
+    } else if (deviceOrientationValues && !coordinates) {
+      const { beta, gamma } = deviceOrientationValues;
+
+      translateX = (gamma * multiplier) / parallaxDivisor;
+      translateY = (beta * multiplier) / parallaxDivisor;
+    } else if (!deviceOrientationValues && coordinates) {
       translateX = (coordinates.x * multiplier) / parallaxDivisor;
       translateY = (coordinates.y * multiplier) / parallaxDivisor;
     }
@@ -304,9 +310,7 @@ class App extends Component {
     const IS_ORIENTATION_AND_TOUCH_USER = this.state.isTouchUser && this.state.isDeviceOrientationUser;
 
     const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
-      !IS_ORIENTATION_AND_TOUCH_USER
-        ? this.getPointerCoordinatesFromCentre(pageX, pageY)
-        : null,
+      this.getPointerCoordinatesFromCentre(pageX, pageY),
       multiplierForTranslateAmounts,
       PARALLAX_AMOUNT_DIVISOR,
       IS_ORIENTATION_AND_TOUCH_USER
