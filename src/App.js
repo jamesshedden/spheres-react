@@ -7,7 +7,6 @@ import './App.css';
 
 const MAX_CIRCLE_AMOUNT = 10;
 let PARALLAX_AMOUNT_DIVISOR = 80;
-const DEVICE_ORIENTATION_MULTIPLIER = 5;
 
 const AVAILABLE_COLORS = {
   RED: '#FF5130',
@@ -58,13 +57,13 @@ class App extends Component {
   componentDidMount() {
     window.addEventListener('resize', this.throttledWindowResize);
 
-    window.addEventListener('deviceorientation', this.throttledDeviceOrientation);
+    // window.addEventListener('deviceorientation', this.throttledDeviceOrientation);
 
     window.addEventListener('touchstart', () => {
       // the higher this is, the less we see any parallax effects — this
       // effectively turns parallax off if the user is interacting via
       // touch events
-      // PARALLAX_AMOUNT_DIVISOR = 5000;
+      PARALLAX_AMOUNT_DIVISOR = 5000;
 
       // setting this on state causes issues with the menu scrolling???
       // saving in memory for now
@@ -92,12 +91,12 @@ class App extends Component {
     if (this.state.circleElements.length && window.IS_TOUCH_USER) {
       let { beta, gamma } = event;
 
-      this.setState({
-        deviceOrientationBeta: beta,
-        deviceOrientationGamma: gamma,
-      });
+      // Because we don't want to have the device upside down
+      // We constrain the x value to the range [-90,90]
+      if (beta >  90) { beta =  90};
+      if (beta < -90) { beta = -90};
 
-      this.transformCirclesWithOrientation(this.state.circleElements, Math.round(beta), Math.round(gamma));
+      this.transformCirclesWithOrientation(this.state.circleElements, beta, gamma);
     }
   }
 
@@ -136,21 +135,18 @@ class App extends Component {
     // will sometimes be 0 or 1 but we don't want to multiply by these
     const MULTIPLIER_BUFFER = 2;
 
-    console.log(`getTranslateAmountsFromCoordinates(): coordinates, multiplierFromZero, parallaxDivisor, deviceOrientationValues:`, coordinates, multiplierFromZero, parallaxDivisor, deviceOrientationValues);
-
     const multiplier = multiplierFromZero + MULTIPLIER_BUFFER
 
-    let translateX = (
-      _.get(deviceOrientationValues, 'gamma', 0)
-      + _.get(coordinates, 'x', 0)
-      * multiplier
-    ) / parallaxDivisor;
+    let translateX;
+    let translateY;
 
-    let translateY = (
-      _.get(deviceOrientationValues, 'beta', 0)
-      + _.get(coordinates, 'y', 0)
-      * multiplier
-    ) / parallaxDivisor;
+    if (coordinates && !deviceOrientationValues) {
+      translateX = (coordinates.x * (multiplier)) / parallaxDivisor;
+      translateY = (coordinates.y * (multiplier)) / parallaxDivisor;
+    } else if (!coordinates && deviceOrientationValues) {
+      translateX = (deviceOrientationValues.beta * (multiplier)) / parallaxDivisor;
+      translateY = (deviceOrientationValues.gamma * (multiplier)) / parallaxDivisor;
+    }
 
     return {
       translateX,
@@ -159,7 +155,6 @@ class App extends Component {
   }
 
   repositionCircles = (circles, pageX, pageY) => {
-    console.log('repositionCircles()');
     let totals = _.map(circles, (circle, index) => {
       let el = document.getElementById(`circle-${ circle.id }`);
       let { top, left } = circle;
@@ -178,17 +173,10 @@ class App extends Component {
     circles = _.merge([], circles, totals);
 
     let repositionedCircles = _.map(circles, (circle, index) => {
-
-      console.log(`circle.top, circle.left:`, circle.top, circle.left);
-
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
         this.getPointerCoordinatesFromCentre(pageX, pageY),
         index - 1,
         PARALLAX_AMOUNT_DIVISOR,
-        {
-          beta: this.state.deviceOrientationBeta - this.getPointerCoordinatesFromCentre(pageX, pageY).y,
-          gamma: this.state.deviceOrientationGamma - this.getPointerCoordinatesFromCentre(pageX, pageY).x
-        }
       );
 
       let top = circle.totals.vertical - translateY;
@@ -251,7 +239,6 @@ class App extends Component {
       this.getPointerCoordinatesFromCentre(pageX, pageY),
       multiplierForTranslateAmounts,
       PARALLAX_AMOUNT_DIVISOR,
-      { beta: this.state.deviceOrientationBeta, gamma: this.state.deviceOrientationGamma }
     );
 
     // let color = COLORS[this.randomNumber(0, COLORS.length)];
@@ -311,6 +298,7 @@ class App extends Component {
   }
 
   transformCircles = (circles, event) => {
+    console.log('transformCircles()');
     let { pageX, pageY } = event;
 
     _.forEach(circles, (circle, index) => {
@@ -325,6 +313,7 @@ class App extends Component {
   }
 
   transformCirclesWithOrientation = (circles, beta, gamma) => {
+    console.log('transformCirclesWithOrientation()');
     _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
         null,
@@ -344,7 +333,6 @@ class App extends Component {
       this.getPointerCoordinatesFromCentre(pageX, pageY),
       activeCircleIndex,
       PARALLAX_AMOUNT_DIVISOR,
-      { beta: this.state.deviceOrientationBeta, gamma: this.state.deviceOrientationGamma }
     );
 
     let { top, left } = this.getPosition(
