@@ -241,6 +241,7 @@ class App extends Component {
       this.getPointerCoordinatesFromCentre(pageX, pageY),
       multiplierForTranslateAmounts,
       PARALLAX_AMOUNT_DIVISOR,
+      { beta: this.state.deviceOrientationBeta, gamma: this.state.deviceOrientationGamma }
     );
 
     // let color = COLORS[this.randomNumber(0, COLORS.length)];
