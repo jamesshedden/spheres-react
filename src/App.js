@@ -34,25 +34,32 @@ const ANGLES = {
   315: '315deg',
 };
 
+const localStorage = window.localStorage || {
+  getItem: () => null,
+  setItem: () => null,
+};
+
 class App extends Component {
   constructor() {
     super();
 
     this.state = {
       circles: [],
-      backgroundColor1: window.localStorage.getItem('spheres.backgroundColor1') || AVAILABLE_COLORS.ORANGE,
-      backgroundColor2: window.localStorage.getItem('spheres.backgroundColor2') || AVAILABLE_COLORS.DARK_PURPLE,
-      backgroundAngle: window.localStorage.getItem('spheres.backgroundAngle') || ANGLES[45],
-      circleColor1: window.localStorage.getItem('spheres.circleColor1') || AVAILABLE_COLORS.RED,
-      circleColor2: window.localStorage.getItem('spheres.circleColor2') || AVAILABLE_COLORS.PURPLE,
-      circleColor3: window.localStorage.getItem('spheres.circleColor3') || AVAILABLE_COLORS.GREEN,
-      circleAngle: window.localStorage.getItem('spheres.circleAngle') || ANGLES[225],
+      backgroundColor1: localStorage.getItem('spheres.backgroundColor1') || AVAILABLE_COLORS.ORANGE,
+      backgroundColor2: localStorage.getItem('spheres.backgroundColor2') || AVAILABLE_COLORS.DARK_PURPLE,
+      backgroundAngle: localStorage.getItem('spheres.backgroundAngle') || ANGLES[45],
+      circleColor1: localStorage.getItem('spheres.circleColor1') || AVAILABLE_COLORS.RED,
+      circleColor2: localStorage.getItem('spheres.circleColor2') || AVAILABLE_COLORS.PURPLE,
+      circleColor3: localStorage.getItem('spheres.circleColor3') || AVAILABLE_COLORS.GREEN,
+      circleAngle: localStorage.getItem('spheres.circleAngle') || ANGLES[225],
       activeCircle: null,
       stars: [],
       circleElements: [],
       sphereCount: 0,
-      isMenuOpen: window.localStorage.getItem('spheres.isMenuOpen') === 'true' ? true : false,
-      isRandomiseShortcutVisible: window.localStorage.getItem('spheres.isRandomiseShortcutVisible') === 'true' ? true : false,
+      isMenuOpen: localStorage.getItem('spheres.isMenuOpen') === 'true' ? true : false,
+      isRandomiseShortcutVisible: localStorage.getItem('spheres.isRandomiseShortcutVisible') === 'true' ? true : false,
+      isUserAfterFirstSphereMove: localStorage.getItem('spheres.isUserAfterFirstSphereMove') === 'true' ? true : false,
+      isUserFullyOnboarded: localStorage.getItem('spheres.isUserFullyOnboarded') === 'true' ? true : false,
     };
   }
 
@@ -351,6 +358,14 @@ class App extends Component {
   }
 
   transformActiveCircle = (event) => {
+    if (!this.state.isUserAfterFirstSphereMove) {
+      this.setState({
+        isUserAfterFirstSphereMove: true,
+      }, () => {
+        localStorage.setItem('spheres.isUserAfterFirstSphereMove', true);
+      });
+    }
+
     if (event.type === 'touchend') {
       event = event.nativeEvent;
     } else {
@@ -432,6 +447,16 @@ class App extends Component {
   }
 
   onMouseDown = (event) => {
+    // If the user has at least 10 spheres, has moved their first sphere, but hasn't
+    // already been marked as onboarded, they should be!
+    if (this.state.circles.length >= MAX_CIRCLE_AMOUNT && this.state.isUserAfterFirstSphereMove && !this.state.isUserFullyOnboarded) {
+      this.setState({
+        isUserFullyOnboarded: true,
+      }, () => {
+        localStorage.setItem('spheres.isUserFullyOnboarded', true);
+      });
+    }
+
     if (!_.includes(event.target.classList, 'circle') && !_.includes(event.target.classList, 'no-circle')) {
       this.setState({
         activeCircle: null,
@@ -457,8 +482,17 @@ class App extends Component {
         this.state.activeCircle.element.classList.remove('is-active');
         this.setState({ activeCircle: null });
       } else {
-        this.makeCircle(event);
-        this.setState({ activeCircle: null });
+        // if there are no spheres, we should be able to create our first one.
+        //
+        // if there is only one sphere, and the user hasn't moved their first sphere,
+        // then we should prevent new spheres being created.
+        //
+        // if there is equal to or more than 1 sphere & the user has moved their first sphere,
+        // then we're good to go.
+        if (this.state.circles.length === 0 || (this.state.circles.length >= 1 && this.state.isUserAfterFirstSphereMove)) {
+          this.makeCircle(event);
+          this.setState({ activeCircle: null });
+        }
       };
     }
   }
@@ -980,6 +1014,63 @@ class App extends Component {
       );
     };
 
+    const Onboarding = () => {
+      return (
+        <div className="size-xxxlarge onboarding-sphere" style={ {
+          position: 'absolute',
+          padding: '10px',
+          border: '1px solid white',
+          borderRadius: '50%',
+          display: 'flex',
+          flex: '1 1 auto',
+          justifyContent: 'center',
+          alignItems: 'center',
+          textAlign: 'center',
+          color: 'white',
+          fontWeight: '100',
+          zIndex: 99999,
+          pointerEvents: 'none',
+          background: 'rgba(0,0,0,0.1)',
+        } }>
+          {
+            !this.state.circles.length
+              ? <div>
+                  Click anywhere to<br/>create your first sphere
+                </div>
+              : null
+          }
+
+          {
+            this.state.circles.length === 1 && !this.state.isUserAfterFirstSphereMove
+              ? <div>
+                  <div style={ { marginBottom: '10px' } }>Nice!</div>
+                  Try dragging your sphere to a new location.
+                </div>
+              : null
+          }
+
+          {
+            this.state.circles.length > 0 && this.state.circles.length < MAX_CIRCLE_AMOUNT && this.state.isUserAfterFirstSphereMove
+              ? <div>
+                  <div style={ { marginBottom: '10px' } }>Perfect.</div>
+                  <div style={ { marginBottom: '10px' } }>Click anywhere to create another sphere.</div>
+                  Create <span style={ { fontWeight: '500' } }>{ MAX_CIRCLE_AMOUNT - this.state.circles.length }</span> more spheres!
+                </div>
+              : null
+          }
+
+          {
+            this.state.circles.length >= MAX_CIRCLE_AMOUNT
+              ? <div>
+                  <div style={ { marginBottom: '10px' } }>That's all there is to it!</div>
+                  Carry on making spheres, or open the menu (top left) for more.
+                </div>
+              : null
+          }
+        </div>
+      );
+    }
+
     return (
       <div id="content" className="content"
       onMouseMove={ this.throttledMouseMove }
@@ -1007,17 +1098,21 @@ class App extends Component {
         overflow: 'hidden',
       } }
       >
+
         {
-          !this.state.isMenuOpen ?
-            <div className="open-menu-icon no-circle"
-            style={ {
-              zIndex: 9999, display: 'inline-block', position: 'absolute', top: 15, left: 15,
-            }}
-            onClick={ this.openMenu }>
-              <img alt="" src="/menu-icon.svg"
-              className="no-circle"
-              />
-            </div>
+          (this.state.circles.length >= MAX_CIRCLE_AMOUNT && !this.state.isUserFullyOnboarded) || this.state.isUserFullyOnboarded
+            ? <div>
+                {
+                  !this.state.isMenuOpen ?
+                    <div className="open-menu-icon no-circle"
+                    onClick={ this.openMenu }>
+                      <img alt="" src="/menu-icon.svg"
+                      className="no-circle"
+                      />
+                    </div>
+                    : null
+                }
+              </div>
             : null
         }
 
@@ -1041,6 +1136,12 @@ class App extends Component {
 
         <ImagePreloader />
         {/* <div className="content__overlay" /> */}
+
+        {
+          !this.state.isUserFullyOnboarded
+          ? <Onboarding/>
+          : null
+        }
 
         <CSSTransitionGroup
         transitionName="circle"
