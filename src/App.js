@@ -144,8 +144,9 @@ class App extends Component {
       translateX = (coordinates.x * (multiplier)) / parallaxDivisor;
       translateY = (coordinates.y * (multiplier)) / parallaxDivisor;
     } else if (!coordinates && deviceOrientationValues) {
-      translateX = (deviceOrientationValues.beta * (multiplier)) / parallaxDivisor;
-      translateY = (deviceOrientationValues.gamma * (multiplier)) / parallaxDivisor;
+      // GAMMA & BETA get reversed here to affect the opposite axis
+      translateX = (deviceOrientationValues.gamma * (multiplier)) / parallaxDivisor;
+      translateY = (deviceOrientationValues.beta * (multiplier)) / parallaxDivisor;
     }
 
     return {
