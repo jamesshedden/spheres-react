@@ -54,27 +54,20 @@ class App extends Component {
     };
   }
 
-  componentDidMount = () => {
-    window.addEventListener('resize', this.throttledWindowResize); // TODO: remove event listener on unmount
+  componentDidMount() {
+    window.addEventListener('resize', this.throttledWindowResize);
 
-    window.addEventListener('deviceorientation', (event) => {
-      this.throttledDeviceOrientation(event);
-
-      if (!this.state.isDeviceOrientationUser) {
-        this.setState({
-          isDeviceOrientationUser: true,
-        });
-      }
-    });
+    window.addEventListener('deviceorientation', this.throttledDeviceOrientation);
 
     window.addEventListener('touchstart', () => {
       // the higher this is, the less we see any parallax effects — this
       // effectively turns parallax off if the user is interacting via
       // touch events
       // PARALLAX_AMOUNT_DIVISOR = 5000;
-      this.setState({
-        isTouchUser: true,
-      });
+
+      // setting this on state causes issues with the menu scrolling???
+      // saving in memory for now
+      window.IS_TOUCH_USER = true;
     });
 
     // - Only allow touchmove on menu
@@ -90,19 +83,12 @@ class App extends Component {
     });
   }
 
-  componentDidUpdate() {
-    if (this.state.isMenuOpen && this.state.menuContentsScrollPosition) {
-      document.getElementById('menu-content').scrollTop = this.state.menuContentsScrollPosition;
-    }
-  }
-
   throttledDeviceOrientation = (event) => {
-    console.log(`throttledDeviceOrientation(): event:`, event);
     _.throttle(_.partial(this.onDeviceOrientation, event), 10)();
   }
 
   onDeviceOrientation = (event) => {
-    if (this.state.circleElements.length && this.state.isTouchUser) {
+    if (this.state.circleElements.length && window.IS_TOUCH_USER) {
       let { beta, gamma } = event;
 
       // Because we don't want to have the device upside down
@@ -110,12 +96,13 @@ class App extends Component {
       if (beta >  90) { beta =  90};
       if (beta < -90) { beta = -90};
 
-      this.setState({
-        deviceOrientationBeta: beta,
-        deviceOrientationGamma: gamma,
-      });
-
       this.transformCirclesWithOrientation(this.state.circleElements, beta, gamma);
+    }
+  }
+
+  componentDidUpdate() {
+    if (this.state.isMenuOpen && this.state.menuContentsScrollPosition) {
+      document.getElementById('menu-content').scrollTop = this.state.menuContentsScrollPosition;
     }
   }
 
@@ -143,29 +130,7 @@ class App extends Component {
     };
   }
 
-  getTranslateAmountsFromCoordinates = (
-    coordinates,
-    multiplierFromZero,
-    parallaxDivisor,
-    deviceOrientationValues
-  ) => {
-    // TODO:
-    // when creating circles and device orientation is in use, we need to know
-    // not only the coordinates that the user chose to put the circle, but also
-    // the device orientation values in order to know how to correctly transform it.
-    //
-    // when we create a circle with a click, we know 2 things from the position of the mouse:
-    // - where the sphere should be created
-    // - what 'viewpoint' we're viewing from (based on cursor position)
-    //
-    // with both these things we can do what we need to know how much the sphere
-    // should be transformed in order to appear correctly in 3d space.
-    //
-    // however, when we create a circle with touch & device orientation, these two
-    // things are now separate:
-    // - the touch says where the sphere should be created
-    // - the device orientation provides the 'viewpoint'
-
+  getTranslateAmountsFromCoordinates = (coordinates, multiplierFromZero, parallaxDivisor, deviceOrientationValues) => {
     // multiplier comes from the counter, or the array index of a circle element, so
     // will sometimes be 0 or 1 but we don't want to multiply by these
     const MULTIPLIER_BUFFER = 2;
@@ -175,24 +140,13 @@ class App extends Component {
     let translateX;
     let translateY;
 
-    translateX = (coordinates.x * multiplier) / parallaxDivisor;
-    translateY = (coordinates.y * multiplier) / parallaxDivisor;
-
-
-    // if (deviceOrientationValues && coordinates) {
-    //   const { beta, gamma } = deviceOrientationValues;
-    //
-    //   translateX = (coordinates.x * gamma * multiplier) / parallaxDivisor;
-    //   translateY = (coordinates.y * beta * multiplier) / parallaxDivisor;
-    // } else if (deviceOrientationValues && !coordinates) {
-    //   const { beta, gamma } = deviceOrientationValues;
-    //
-    //   translateX = (gamma * multiplier) / parallaxDivisor;
-    //   translateY = (beta * multiplier) / parallaxDivisor;
-    // } else if (!deviceOrientationValues && coordinates) {
-    //   translateX = (coordinates.x * multiplier) / parallaxDivisor;
-    //   translateY = (coordinates.y * multiplier) / parallaxDivisor;
-    // }
+    if (coordinates && !deviceOrientationValues) {
+      translateX = (coordinates.x * (multiplier)) / parallaxDivisor;
+      translateY = (coordinates.y * (multiplier)) / parallaxDivisor;
+    } else if (!coordinates && deviceOrientationValues) {
+      translateX = (deviceOrientationValues.beta * (multiplier)) / parallaxDivisor;
+      translateY = (deviceOrientationValues.gamma * (multiplier)) / parallaxDivisor;
+    }
 
     return {
       translateX,
@@ -274,69 +228,25 @@ class App extends Component {
       event.persist();
     }
 
-    let pageX = event.pageX || event.changedTouches[0].pageX;
-    let pageY = event.pageY || event.changedTouches[0].pageY;
+    let { pageX, pageY } = event;
 
-    // calculating the position of the sphere in the stack
-    // if we haven't hit the total number of spheres yet, we can just use the
-    // latest sphere count.
-    //
-    // if now, we can take the total amount and minus 1 (essentially means the
-    // newest sphere always has the maximum possible index/multiplier)
+    // const randomDimension = this.randomNumber(100, 250);
+
     const multiplierForTranslateAmounts = this.state.sphereCount > MAX_CIRCLE_AMOUNT ?
       MAX_CIRCLE_AMOUNT - 1 : this.state.sphereCount;
-
-    // Based on where we clicked to make the circle, we need to figure out
-    // how much of its position should be affected by transform amounts
-    //
-    // distance = top & left position + translateX & translateY based on
-    // cursor position.
-    //
-    // so we take the cursor's position, the 'multiplier' i.e. the index of the
-    // sphere & the parallax 'amount' to figure out how much of its position
-    // should come from transforms.
-    //
-
-    // let xForGetPointerCoordinatesFromCentre;
-    // let yForGetPointerCoordinatesFromCentre;
-
-    // NOTE: DEVICE ORIENTATION
-    // for device orientation, we don't care about pointer coordinates — we care about
-    // the gamma & beta values, which represent the altered 'viewpoint' on the x & y axis,
-    // in the same way the pointer coordinates normally represent the 'viewpoint' on
-    // desktop
-    // if (this.state.isDeviceOrientationUser && this.state.isTouchUser) {
-    //   xForGetPointerCoordinatesFromCentre = this.state.deviceOrientationGamma*3;
-    //   yForGetPointerCoordinatesFromCentre = this.state.deviceOrientationBeta*3;
-    // } else {
-    //   xForGetPointerCoordinatesFromCentre = pageX;
-    //   yForGetPointerCoordinatesFromCentre = pageY;
-    // }
-    //
 
     const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
       this.getPointerCoordinatesFromCentre(pageX, pageY),
       multiplierForTranslateAmounts,
       PARALLAX_AMOUNT_DIVISOR,
-      {
-        beta: this.state.deviceOrientationBeta,
-        gamma: this.state.deviceOrientationGamma,
-      }
     );
 
-    // get random 'color index' — this can refer to color 1, 2 and 3 — the colours
-    // could be subject to change, but spheres should remember which number
-    // they are.
+    // let color = COLORS[this.randomNumber(0, COLORS.length)];
     let colorIndex = this.randomNumber(1, 3);
-
-    // random size
     let size = SIZES[this.randomNumber(0, SIZES.length)];
 
-    // cache circles
     let circles = this.state.circles;
 
-    // now we can set the top & left positions as the place where we clicked,
-    // minus the amounts we know should come from translations
     let top = pageY - translateY;
     let left = pageX - translateX;
 
@@ -387,10 +297,13 @@ class App extends Component {
     }
   }
 
-  transformCircles = (circles, x, y) => {
+  transformCircles = (circles, event) => {
+    console.log('transformCircles()');
+    let { pageX, pageY } = event;
+
     _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
-        this.getPointerCoordinatesFromCentre(x, y),
+        this.getPointerCoordinatesFromCentre(pageX, pageY),
         index,
         PARALLAX_AMOUNT_DIVISOR,
       );
@@ -400,6 +313,7 @@ class App extends Component {
   }
 
   transformCirclesWithOrientation = (circles, beta, gamma) => {
+    console.log('transformCirclesWithOrientation()');
     _.forEach(circles, (circle, index) => {
       const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
         null,
@@ -498,25 +412,19 @@ class App extends Component {
   }
 
   onMouseMove = (event) => {
-    event.persist();
+    const eventType = event.type;
+
+    if (eventType === 'touchmove') {
+      event = event.nativeEvent;
+    } else {
+      event.persist();
+    }
 
     const { pageX, pageY } = event;
 
-    // This shouldn't get called when user isTouchUser, but
-    // still seems to get triggered in some situations e.g. opening the menu
-    if (this.state.circleElements.length && !this.state.isTouchUser) {
-      this.transformCircles(this.state.circleElements, pageX, pageY);
+    if (this.state.circleElements.length && !window.IS_TOUCH_USER) {
+      this.transformCircles(this.state.circleElements, event);
     }
-
-    if (this.state.activeCircle) {
-      this.moveActiveCircle(this.state.activeCircle.element, pageX, pageY);
-    }
-  }
-
-  onTouchMove = (event) => {
-    event = event.nativeEvent;
-
-    const { pageX, pageY } = event;
 
     if (this.state.activeCircle) {
       this.moveActiveCircle(this.state.activeCircle.element, pageX, pageY);
@@ -540,10 +448,6 @@ class App extends Component {
 
   throttledMouseMove = (event) => {
     _.throttle(this.onMouseMove.bind(this, event), 20)();
-  }
-
-  throttledTouchMove = (event) => {
-    _.throttle(this.onTouchMove.bind(this, event), 20)();
   }
 
   onMouseUp = (event) => {
@@ -1042,10 +946,10 @@ class App extends Component {
     return (
       <div id="content" className="content"
       onMouseMove={ this.throttledMouseMove }
-      onTouchMove={ this.throttledTouchMove }
+      onTouchMove={ this.throttledMouseMove }
       onMouseDown={ this.onMouseDown }
       onTouchStart={ this.onMouseDown }
-      onMouseUp={ this.onMouseUp } // TODO: REINSTATE!
+      onMouseUp={ this.onMouseUp }
       onTouchEnd={ this.onMouseUp }
       style={ {
         height: '100%',
