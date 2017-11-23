@@ -61,7 +61,6 @@ class App extends Component {
       this.throttledDeviceOrientation();
 
       if (!this.state.isDeviceOrientationUser) {
-        alert('deviceorientation true');
         this.setState({
           isDeviceOrientationUser: true,
         });
@@ -177,11 +176,13 @@ class App extends Component {
 
     if (deviceOrientationValues && coordinates) {
       const { beta, gamma } = deviceOrientationValues;
+      alert(`deviceOrientationValues && coordinates: beta, gamma:`, beta, gamma);
 
       translateX = (coordinates.x * gamma * multiplier) / parallaxDivisor;
       translateY = (coordinates.y * beta * multiplier) / parallaxDivisor;
     } else if (deviceOrientationValues && !coordinates) {
       const { beta, gamma } = deviceOrientationValues;
+      alert(`deviceOrientationValues && !coordinates: beta, gamma:`, beta, gamma);
 
       translateX = (gamma * multiplier) / parallaxDivisor;
       translateY = (beta * multiplier) / parallaxDivisor;
