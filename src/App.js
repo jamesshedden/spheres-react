@@ -57,8 +57,8 @@ class App extends Component {
   componentDidMount = () => {
     window.addEventListener('resize', this.throttledWindowResize); // TODO: remove event listener on unmount
 
-    window.addEventListener('deviceorientation', () => {
-      this.throttledDeviceOrientation();
+    window.addEventListener('deviceorientation', (event) => {
+      this.throttledDeviceOrientation(event);
 
       if (!this.state.isDeviceOrientationUser) {
         this.setState({
@@ -97,6 +97,7 @@ class App extends Component {
   }
 
   throttledDeviceOrientation = (event) => {
+    console.log(`throttledDeviceOrientation(): event:`, event);
     _.throttle(_.partial(this.onDeviceOrientation, event), 10)();
   }
 
@@ -174,23 +175,24 @@ class App extends Component {
     let translateX;
     let translateY;
 
+    translateX = (coordinates.x * multiplier) / parallaxDivisor;
+    translateY = (coordinates.y * multiplier) / parallaxDivisor;
 
-    if (deviceOrientationValues && coordinates) {
-      const { beta, gamma } = deviceOrientationValues;
-      alert(`deviceOrientationValues && coordinates: this.state.deviceOrientationBeta, this.state.deviceOrientationGamma:`, this.state.deviceOrientationBeta, this.state.deviceOrientationGamma);
 
-      translateX = (coordinates.x * gamma * multiplier) / parallaxDivisor;
-      translateY = (coordinates.y * beta * multiplier) / parallaxDivisor;
-    } else if (deviceOrientationValues && !coordinates) {
-      const { beta, gamma } = deviceOrientationValues;
-      alert(`deviceOrientationValues && !coordinates: this.state.deviceOrientationBeta, this.state.deviceOrientationGamma:`, this.state.deviceOrientationBeta, this.state.deviceOrientationGamma);
-      
-      translateX = (gamma * multiplier) / parallaxDivisor;
-      translateY = (beta * multiplier) / parallaxDivisor;
-    } else if (!deviceOrientationValues && coordinates) {
-      translateX = (coordinates.x * multiplier) / parallaxDivisor;
-      translateY = (coordinates.y * multiplier) / parallaxDivisor;
-    }
+    // if (deviceOrientationValues && coordinates) {
+    //   const { beta, gamma } = deviceOrientationValues;
+    //
+    //   translateX = (coordinates.x * gamma * multiplier) / parallaxDivisor;
+    //   translateY = (coordinates.y * beta * multiplier) / parallaxDivisor;
+    // } else if (deviceOrientationValues && !coordinates) {
+    //   const { beta, gamma } = deviceOrientationValues;
+    //
+    //   translateX = (gamma * multiplier) / parallaxDivisor;
+    //   translateY = (beta * multiplier) / parallaxDivisor;
+    // } else if (!deviceOrientationValues && coordinates) {
+    //   translateX = (coordinates.x * multiplier) / parallaxDivisor;
+    //   translateY = (coordinates.y * multiplier) / parallaxDivisor;
+    // }
 
     return {
       translateX,
@@ -272,7 +274,8 @@ class App extends Component {
       event.persist();
     }
 
-    let { pageX, pageY } = event;
+    let pageX = event.pageX || event.changedTouches[0].pageX;
+    let pageY = event.pageY || event.changedTouches[0].pageY;
 
     // calculating the position of the sphere in the stack
     // if we haven't hit the total number of spheres yet, we can just use the
@@ -310,18 +313,15 @@ class App extends Component {
     //   yForGetPointerCoordinatesFromCentre = pageY;
     // }
     //
-    const IS_ORIENTATION_AND_TOUCH_USER = this.state.isTouchUser && this.state.isDeviceOrientationUser;
 
     const { translateX, translateY } = this.getTranslateAmountsFromCoordinates(
       this.getPointerCoordinatesFromCentre(pageX, pageY),
       multiplierForTranslateAmounts,
       PARALLAX_AMOUNT_DIVISOR,
-      IS_ORIENTATION_AND_TOUCH_USER
-        ? {
-            beta: this.state.deviceOrientationBeta,
-            gamma: this.state.deviceOrientationGamma,
-          }
-        : null,
+      {
+        beta: this.state.deviceOrientationBeta,
+        gamma: this.state.deviceOrientationGamma,
+      }
     );
 
     // get random 'color index' — this can refer to color 1, 2 and 3 — the colours
@@ -1045,7 +1045,7 @@ class App extends Component {
       onTouchMove={ this.throttledTouchMove }
       onMouseDown={ this.onMouseDown }
       onTouchStart={ this.onMouseDown }
-      onMouseUp={ this.onMouseUp }
+      onMouseUp={ this.onMouseUp } // TODO: REINSTATE!
       onTouchEnd={ this.onMouseUp }
       style={ {
         height: '100%',
