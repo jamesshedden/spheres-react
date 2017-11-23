@@ -90,12 +90,14 @@ class App extends Component {
 
   onDeviceOrientation = (event) => {
     if (this.state.circleElements.length && window.IS_TOUCH_USER) {
-      let { gamma } = event;
+      let { beta, gamma } = event;
 
+      if (beta > 60) beta = 60;
+      if (beta < -60) beta = -60;
       if (gamma > 60) gamma = 60;
       if (gamma < -60) gamma = -60;
 
-      this.transformCirclesWithOrientation(this.state.circleElements, Math.round(gamma));
+      this.transformCirclesWithOrientation(this.state.circleElements, Math.round(beta), Math.round(gamma));
     }
   }
 
@@ -129,7 +131,7 @@ class App extends Component {
     };
   }
 
-  getTranslateAmountsFromCoordinates = (coordinates, multiplierFromZero, parallaxDivisor, deviceOrientationGamma) => {
+  getTranslateAmountsFromCoordinates = (coordinates, multiplierFromZero, parallaxDivisor, deviceOrientationValues) => {
     // multiplier comes from the counter, or the array index of a circle element, so
     // will sometimes be 0 or 1 but we don't want to multiply by these
     const MULTIPLIER_BUFFER = 2;
@@ -139,14 +141,13 @@ class App extends Component {
     let translateX;
     let translateY;
 
-    if (coordinates && !deviceOrientationGamma) {
+    if (coordinates && !deviceOrientationValues) {
       translateX = (coordinates.x * multiplier) / parallaxDivisor;
       translateY = (coordinates.y * multiplier) / parallaxDivisor;
-    } else if (!coordinates && deviceOrientationGamma) {
-      console.log(`deviceOrientationGamma:`, deviceOrientationGamma);
+    } else if (!coordinates && deviceOrientationValues) {
       // GAMMA & BETA get reversed here to affect the opposite axis
-      translateX = (deviceOrientationGamma * DEVICE_ORIENTATION_MULTIPLIER * multiplier) / parallaxDivisor;
-      translateY = 0;
+      translateX = (deviceOrientationValues.gamma * DEVICE_ORIENTATION_MULTIPLIER * multiplier) / parallaxDivisor;
+      translateY = (deviceOrientationValues.beta * DEVICE_ORIENTATION_MULTIPLIER * multiplier) / parallaxDivisor;;
     }
 
     return {
@@ -299,7 +300,6 @@ class App extends Component {
   }
 
   transformCircles = (circles, event) => {
-    console.log('transformCircles()');
     let { pageX, pageY } = event;
 
     _.forEach(circles, (circle, index) => {
