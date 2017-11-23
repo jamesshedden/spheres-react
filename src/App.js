@@ -186,7 +186,7 @@ class App extends Component {
         index - 1,
         PARALLAX_AMOUNT_DIVISOR,
         {
-          beta: this.state.deviceOrientationBeta - this.getPointerCoordinatesFromCentre(pageX, pageY).y, 
+          beta: this.state.deviceOrientationBeta - this.getPointerCoordinatesFromCentre(pageX, pageY).y,
           gamma: this.state.deviceOrientationGamma - this.getPointerCoordinatesFromCentre(pageX, pageY).x
         }
       );
@@ -962,7 +962,7 @@ class App extends Component {
       onMouseDown={ this.onMouseDown }
       onTouchStart={ this.onMouseDown }
       onMouseUp={ this.onMouseUp }
-      // onTouchEnd={ this.onMouseUp } // TODO: Reinstate!!!
+      onTouchEnd={ this.onMouseUp }
       style={ {
         height: '100%',
         background: `
