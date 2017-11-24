@@ -1016,57 +1016,47 @@ class App extends Component {
 
     const Onboarding = () => {
       return (
-        <div className="size-xxxlarge onboarding-sphere" style={ {
-          position: 'absolute',
-          padding: '10px',
-          border: '1px solid white',
-          borderRadius: '50%',
-          display: 'flex',
-          flex: '1 1 auto',
-          justifyContent: 'center',
-          alignItems: 'center',
-          textAlign: 'center',
-          color: 'white',
-          fontWeight: '100',
-          zIndex: 99999,
-          pointerEvents: 'none',
-          background: 'rgba(0,0,0,0.1)',
+        <div className="size-xxxlarge onboarding-sphere"
+        style={ {
+          background: 'rgba(54,30,110,0.4)',
         } }>
-          {
-            !this.state.circles.length
-              ? <div>
-                  Click anywhere to<br/>create your first sphere
-                </div>
-              : null
-          }
+          <div className="onboarding-sphere__text">
+            {
+              !this.state.circles.length
+                ? <div>
+                    Click anywhere to<br/>create your first sphere
+                  </div>
+                : null
+            }
 
-          {
-            this.state.circles.length === 1 && !this.state.isUserAfterFirstSphereMove
-              ? <div>
-                  <div style={ { marginBottom: '10px' } }>Nice!</div>
-                  Try dragging your sphere to a new location.
-                </div>
-              : null
-          }
+            {
+              this.state.circles.length === 1 && !this.state.isUserAfterFirstSphereMove
+                ? <div>
+                    <div style={ { marginBottom: '10px' } }>Nice!</div>
+                    Try dragging your sphere to a new location.
+                  </div>
+                : null
+            }
 
-          {
-            this.state.circles.length > 0 && this.state.circles.length < MAX_CIRCLE_AMOUNT && this.state.isUserAfterFirstSphereMove
-              ? <div>
-                  <div style={ { marginBottom: '10px' } }>Perfect.</div>
-                  <div style={ { marginBottom: '10px' } }>Click anywhere to create another sphere.</div>
-                  Create <span style={ { fontWeight: '500' } }>{ MAX_CIRCLE_AMOUNT - this.state.circles.length }</span> more spheres!
-                </div>
-              : null
-          }
+            {
+              this.state.circles.length > 0 && this.state.circles.length < MAX_CIRCLE_AMOUNT && this.state.isUserAfterFirstSphereMove
+                ? <div>
+                    <div style={ { marginBottom: '10px' } }>Perfect.</div>
+                    <div style={ { marginBottom: '10px' } }>Click anywhere to create another sphere.</div>
+                    Create <span style={ { fontWeight: '500' } }>{ MAX_CIRCLE_AMOUNT - this.state.circles.length }</span> more spheres!
+                  </div>
+                : null
+            }
 
-          {
-            this.state.circles.length >= MAX_CIRCLE_AMOUNT
-              ? <div>
-                  <div style={ { marginBottom: '10px' } }>That's all there is to it!</div>
-                  Carry on making spheres, or open the menu (top left) for more.
-                </div>
-              : null
-          }
+            {
+              this.state.circles.length >= MAX_CIRCLE_AMOUNT
+                ? <div>
+                    <div style={ { marginBottom: '10px' } }>That's all there is to it!</div>
+                    Carry on making spheres, or open the menu (top left) for more.
+                  </div>
+                : null
+            }
+          </div>
         </div>
       );
     }

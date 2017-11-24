@@ -603,12 +603,36 @@
 }
 
 .onboarding-sphere {
-  font-size: 14px;
+  font-size: 13px;
   bottom: 15px;
   right: 15px;
+  position: absolute;
+  border-radius: 50%;
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+  font-weight: 100;
+  z-index: 99999;
+  pointer-events: none;
 }
 
-@media (min-width: 420px) {
+.onboarding-sphere__text {
+  margin: 30px;
+}
+
+@media (min-width: 400px) {
+  .onboarding-sphere {
+    font-size: 15px;
+    line-height: 1.5;
+    bottom: 30px;
+    right: 30px;
+  }
+}
+
+@media (min-width: 800px) {
   .onboarding-sphere {
     font-size: 18px;
     line-height: 1.5;
