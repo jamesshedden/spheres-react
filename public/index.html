@@ -32,6 +32,10 @@
 
     <!-- Google Search Console -->
     <meta name="google-site-verification" content="KrzV7RcR4eG4W395OgltNR8QPQc3bANfJMTIj2z_g6g" />
+
+    <!-- Google Analytics async code  -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-18115176-6"></script>
+
     <title>Spheres</title>
   </head>
   <body>
@@ -46,5 +50,16 @@
       To begin the development, run `npm start`.
       To create a production bundle, use `npm run build`.
     -->
+
+    <script>
+      if (window.location.hostname !== 'localhost') {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-18115176-6');
+      } else {
+        console.log('frets.fyi running locally.')
+      }
+    </script>
   </body>
 </html>
