@@ -4,6 +4,8 @@ import classNames from 'classnames';
 import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup';
 import Stars from './Stars';
 import './App.css';
+import { CloseIcon, CloseIconMobile, MenuIcon, RandomiseIcon, TickIcon } from './icons';
+
 
 const MAX_CIRCLE_AMOUNT = 10;
 let PARALLAX_AMOUNT_DIVISOR = 80;
@@ -608,10 +610,6 @@ class App extends Component {
         } }>
           <img alt="" src="/dots-texture-light.jpg"/>
           <img alt="" src="/dots-texture-dark-transparent.png"/>
-          <img alt="" src="/menu-icon.svg"/>
-          <img alt="" src="/close-icon.svg"/>
-          <img alt="" src="/tick-icon.svg"/>
-          <img alt="" src="/randomise-icon.svg"/>
         </div>
       );
     }
@@ -637,7 +635,9 @@ class App extends Component {
                     window.localStorage.setItem(`spheres.${keyToChange}`, color);
                   });
                 } }>
-                  <img alt="" className="color-select__active-icon" src="/tick-icon.svg"/>
+                  <div className="color-select__active-icon">
+                    <TickIcon/>
+                  </div>
                 </div>
               );
             })
@@ -673,7 +673,9 @@ class App extends Component {
                     window.localStorage.setItem(`spheres.${keyToChange}`, angle);
                   });
                 } }>
-                  <img alt="" className="angle-select__active-icon" src="/tick-icon.svg"/>
+                  <div className="color-select__active-icon">
+                    <TickIcon/>
+                  </div>
                 </div>
               );
             })
@@ -694,12 +696,13 @@ class App extends Component {
               this.state.isMenuOpen ?
               <div className="close-menu-icon no-circle"
               onClick={ this.closeMenu }>
-                <img src="/close-icon.svg"
-                className="close-menu-icon__desktop-image no-circle"
-                />
-                <img src="/close-icon-mobile.svg"
-                className="close-menu-icon__mobile-image no-circle"
-                />
+                <div className="close-menu-icon__desktop-image no-circle">
+                  <CloseIcon/>
+                </div>
+
+                <div className="close-menu-icon__mobile-image no-circle">
+                  <CloseIconMobile/>
+                </div>
               </div>
               : null
             }
@@ -1096,9 +1099,7 @@ class App extends Component {
                   !this.state.isMenuOpen ?
                     <div className="open-menu-icon no-circle"
                     onClick={ this.openMenu }>
-                      <img alt="" src="/menu-icon.svg"
-                      className="no-circle"
-                      />
+                      <MenuIcon/>
                     </div>
                     : null
                 }
@@ -1112,9 +1113,7 @@ class App extends Component {
               'randomise-menu-icon--is-menu-open': this.state.isMenuOpen,
             }) }
             onClick={ this.randomiseSettings }>
-              <img alt="" src="/randomise-icon.svg"
-              className="no-circle"
-              />
+              <RandomiseIcon/>
             </div>
             : null
         }

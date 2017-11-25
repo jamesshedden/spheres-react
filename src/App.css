@@ -565,16 +565,24 @@
   left: 15px;
 }
 
+.close-menu-icon:hover,
+.open-menu-icon:hover,
+.randomise-menu-icon:hover {
+  cursor: pointer;
+}
+
+.menu__section-item:hover {
+  cursor: pointer;
+}
+
 @media (min-width: 500px) {
   .close-menu-icon:hover,
   .open-menu-icon:hover,
   .randomise-menu-icon:hover {
-    cursor: pointer;
     opacity: 0.5;
   }
 
   .menu__section-item:hover {
-    cursor: pointer;
     background: #F9F9F9;
   }
 
