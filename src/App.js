@@ -616,7 +616,7 @@ class App extends Component {
 
     const ColorSelect = ({ keyToChange }) => {
       return (
-        <div className='color-select'>
+        <div className='color-select no-circle'>
           {
             _.map(AVAILABLE_COLORS, (color, index) => {
               return (
@@ -635,7 +635,7 @@ class App extends Component {
                     window.localStorage.setItem(`spheres.${keyToChange}`, color);
                   });
                 } }>
-                  <div className="color-select__active-icon">
+                  <div className="color-select__active-icon no-circle">
                     <TickIcon/>
                   </div>
                 </div>
@@ -648,7 +648,7 @@ class App extends Component {
 
     const AngleSelect = ({ keyToChange }) => {
       return (
-        <div className="angle-select">
+        <div className="angle-select no-circle">
           {
             _.map(ANGLES, (angle, index) => {
               return (
@@ -673,7 +673,7 @@ class App extends Component {
                     window.localStorage.setItem(`spheres.${keyToChange}`, angle);
                   });
                 } }>
-                  <div className="color-select__active-icon">
+                  <div className="angle-select__active-icon no-circle">
                     <TickIcon/>
                   </div>
                 </div>
