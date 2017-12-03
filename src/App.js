@@ -13,17 +13,17 @@ let PARALLAX_AMOUNT_DIVISOR = 80;
 
 const AVAILABLE_COLORS = {
   RED: '#FF5130',
-  ORANGE: '#FEB422',
-  YELLOW: '#FFDD30',
-  GREEN: '#5CFF80',
-  LIGHT_BLUE: '#A2FFFB',
-  DARK_BLUE: '#4692FF',
-  DARKER_BLUE: '#0037D0',
   DARK_PURPLE: '#370078',
-  PURPLE: '#A496FF',
-  PINK: '#F7A2E0',
+  DARKER_BLUE: '#0037D0',
   DARK_GREY: '#3A3A3A',
+  ORANGE: '#FEB422',
+  PURPLE: '#A496FF',
+  DARK_BLUE: '#4692FF',
   GREY: '#B4B4B4',
+  YELLOW: '#FFDD30',
+  PINK: '#F7A2E0',
+  LIGHT_BLUE: '#A2FFFB',
+  GREEN: '#5CFF80',
 };
 
 const SIZES = ['xsmall', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge'];
