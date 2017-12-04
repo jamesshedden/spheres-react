@@ -549,7 +549,7 @@
   margin: 8px;
 }
 
-.icons__icon:last-child {
+.icons__icon:nth-child(2) {
   margin-left: 4px;
 }
 
