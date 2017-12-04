@@ -507,9 +507,6 @@ class App extends Component {
   }
 
   onMouseUp = (event) => {
-    console.log(`event.target:`, event.target);
-    console.log(`event.timeStamp:`, event.timeStamp);
-    console.log(`this.state.activeCircle:`, this.state.activeCircle);
     if (!_.includes(event.target.classList, 'no-circle')) {
       if (this.state.activeCircle && event.timeStamp - this.state.activeCircle.activeAt > 200) {
         this.transformActiveCircle(event);
