@@ -472,6 +472,7 @@ class App extends Component {
 
   onMouseDown = (event) => {
     if (!_.includes(event.target.classList, 'circle') && !_.includes(event.target.classList, 'no-circle')) {
+      console.log('not circle or no-circle target');
       this.setState({
         activeCircle: null,
         menuContentsScrollPosition: document.getElementById('menu-content') && document.getElementById('menu-content').scrollTop,
@@ -1123,31 +1124,36 @@ class App extends Component {
       } }
       >
 
-        {
-          (this.state.circles.length >= ONBOARDING_CIRCLE_AMOUNT && !this.state.isUserFullyOnboarded) || this.state.isUserFullyOnboarded
-            ? <div>
-                {
-                  !this.state.isMenuOpen ?
-                    <div className="open-menu-icon no-circle"
-                    onClick={ this.openMenu }>
-                      <MenuIcon/>
-                    </div>
-                    : null
-                }
-              </div>
-            : null
-        }
+        <div className={ classNames('icons no-circle', {
+          'is-menu-open': this.state.isMenuOpen,
+        }) }>
+          {
+            !this.state.isMenuOpen &&
+            (
+              (
+                this.state.circles.length >= ONBOARDING_CIRCLE_AMOUNT
+                && !this.state.isUserFullyOnboarded
+              )
+              || this.state.isUserFullyOnboarded
+            )
+              ? <div className="icons__icon open-menu-icon no-circle"
+                onClick={ this.openMenu }>
+                  <MenuIcon/>
+                </div>
+              : null
+          }
 
-        {
-          this.state.isRandomiseShortcutVisible ?
-            <div className={ classNames('randomise-menu-icon no-circle', {
-              'randomise-menu-icon--is-menu-open': this.state.isMenuOpen,
-            }) }
-            onClick={ this.randomiseSettings }>
-              <RandomiseIcon/>
-            </div>
-            : null
-        }
+          {
+            this.state.isRandomiseShortcutVisible ?
+              <div className={ classNames('randomise-menu-icon icons__icon no-circle', {
+                'randomise-menu-icon--is-menu-open': this.state.isMenuOpen,
+              }) }
+              onClick={ this.randomiseSettings }>
+                <RandomiseIcon/>
+              </div>
+              : null
+          }
+        </div>
 
         {
           this.state.isMenuOpen ?

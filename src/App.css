@@ -373,15 +373,14 @@
 }
 
 .randomise-menu-icon {
-  z-index: 9999;
+  /*z-index: 9999;
   display: inline-block;
   position: absolute;
-  top: 15px;
-  left: 54px;
-}
-
-.randomise-menu-icon--is-menu-open {
-  left: 15px;
+  top: 8px;
+  left: 50px;
+  padding: 8px;*/
+  position: relative;
+  top: 2px;
 }
 
 .close-menu-icon__desktop-image {
@@ -415,13 +414,13 @@
   }
 
   .randomise-menu-icon {
-    top: 30px;
+    /*top: 30px;
     left: 69px;
+    padding: 0;*/
   }
 
   .randomise-menu-icon--is-menu-open {
-    top: 28px;
-    left: 330px;
+    top: -2px;
   }
 
   .angle-select__item:hover .angle-select__active-icon {
@@ -537,22 +536,24 @@
   );
 }
 
-.close-menu-icon,
-.open-menu-icon {
-  /*opacity: 0.5;*/
-}
-
-.open-menu-icon {
+.icons {
   z-index: 9999;
-  display: inline-block;
   position: absolute;
-  top: 15px;
-  left: 15px;
+  top: 0;
+  left: 0;
+  padding: 5px 0 0 5px;
 }
 
-.close-menu-icon:hover,
-.open-menu-icon:hover,
-.randomise-menu-icon:hover {
+.icons__icon {
+  display: inline-block;
+  margin: 8px;
+}
+
+.icons__icon:last-child {
+  margin-left: 4px;
+}
+
+.close-menu-icon:hover  {
   cursor: pointer;
 }
 
@@ -561,9 +562,24 @@
 }
 
 @media (min-width: 500px) {
-  .close-menu-icon:hover,
-  .open-menu-icon:hover,
-  .randomise-menu-icon:hover {
+  .icons {
+    padding: 20px 0 0 20px;
+  }
+
+  .icons.is-menu-open {
+    left: 300px;
+  }
+
+  .icons__icon {
+    margin: 10px;
+  }
+
+  .icons__icon:hover {
+    cursor: pointer;
+    opacity: 0.5;
+  }
+
+  .close-menu-icon:hover {
     opacity: 0.5;
   }
 
@@ -576,11 +592,12 @@
   }
 
   .open-menu-icon {
-    z-index: 9999;
+    /*z-index: 9999;
     display: inline-block;
     position: absolute;
     top: 30px;
     left: 30px;
+    padding: 0;*/
   }
 }
 
