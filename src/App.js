@@ -6,7 +6,6 @@ import Stars from './Stars';
 import './App.css';
 import { CloseIcon, CloseIconMobile, MenuIcon, RandomiseIcon, TickIcon } from './icons';
 
-
 const MAX_CIRCLE_AMOUNT = 10;
 const ONBOARDING_CIRCLE_AMOUNT = 6;
 let PARALLAX_AMOUNT_DIVISOR = 80;
@@ -93,7 +92,25 @@ class App extends Component {
       // setting this on state causes issues with the menu scrolling???
       // saving in memory for now
       window.IS_TOUCH_USER = true;
-    });
+    }, { passive: false });
+
+    // This is necessary to both touchstart & mousedown being triggered on
+    // mobile chrome. By setting passive to false explicitly, we can prevent it
+    // ourselves rather than relying on Chrome's attempt to make it 'passive'
+    // (which does not result in the event being completely prevented)
+    document.getElementById('content').addEventListener('touchstart', (event) => {
+      if (!_.includes(event.target.classList, 'no-circle')) {
+        event.preventDefault();
+        this.onMouseDown(event);
+      }
+    }, { passive: false })
+
+    document.getElementById('content').addEventListener('touchmove', (event) => {
+      if (!_.includes(event.target.classList, 'no-circle')) {
+        event.preventDefault();
+        this.throttledMouseMove(event);
+      }
+    }, { passive: false })
 
     // - Only allow touchmove on menu
     //
@@ -105,7 +122,7 @@ class App extends Component {
       if (!event.target.classList.contains('no-circle')) {
         event.preventDefault();
       }
-    });
+    }, { passive: false });
   }
 
   throttledDeviceOrientation = (event) => {
@@ -248,7 +265,7 @@ class App extends Component {
     let eventType = event.type;
 
     if (eventType === 'touchend') {
-      event = event.nativeEvent;
+      event = event.nativeEvent.changedTouches[0];
     } else {
       event.persist();
     }
@@ -391,7 +408,7 @@ class App extends Component {
     }
 
     if (event.type === 'touchend') {
-      event = event.nativeEvent;
+      event = event.nativeEvent.changedTouches[0];
     } else {
       event.persist();
     }
@@ -454,7 +471,7 @@ class App extends Component {
     const eventType = event.type;
 
     if (eventType === 'touchmove') {
-      event = event.nativeEvent;
+      event = event.changedTouches[0];
     } else {
       event.persist();
     }
@@ -472,7 +489,6 @@ class App extends Component {
 
   onMouseDown = (event) => {
     if (!_.includes(event.target.classList, 'circle') && !_.includes(event.target.classList, 'no-circle')) {
-      console.log('not circle or no-circle target');
       this.setState({
         activeCircle: null,
         menuContentsScrollPosition: document.getElementById('menu-content') && document.getElementById('menu-content').scrollTop,
@@ -491,6 +507,9 @@ class App extends Component {
   }
 
   onMouseUp = (event) => {
+    console.log(`event.target:`, event.target);
+    console.log(`event.timeStamp:`, event.timeStamp);
+    console.log(`this.state.activeCircle:`, this.state.activeCircle);
     if (!_.includes(event.target.classList, 'no-circle')) {
       if (this.state.activeCircle && event.timeStamp - this.state.activeCircle.activeAt > 200) {
         this.transformActiveCircle(event);
@@ -514,7 +533,11 @@ class App extends Component {
 
   onCircleMouseDown = (event, circle) => {
     if (event.type === 'touchend' || event.type === 'touchstart') {
-      event = event.nativeEvent;
+      // keep the timestamp & reattach it to our mutated `event` later
+      let timeStamp = event.timeStamp;
+      event = event.nativeEvent.changedTouches[0];
+      // reattach timestamp
+      event.timeStamp = timeStamp;
     }
 
     const { pageX, pageY } = event;
@@ -1099,9 +1122,12 @@ class App extends Component {
     return (
       <div id="content" className="content"
       onMouseMove={ this.throttledMouseMove }
-      onTouchMove={ this.throttledMouseMove }
+      // onTouchMove={ this.throttledMouseMove }
       onMouseDown={ this.onMouseDown }
-      onTouchStart={ this.onMouseDown }
+      // onTouchStart={ (event) => {
+      //   event.preventDefault();
+      //   this.onMouseDown(event);
+      // } }
       onMouseUp={ this.onMouseUp }
       onTouchEnd={ this.onMouseUp }
       style={ {
