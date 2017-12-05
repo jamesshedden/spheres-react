@@ -1038,6 +1038,17 @@ class App extends Component {
               </div>
             </div>
 
+            <div className="menu__section no-circle">
+              <a className="menu__section-item menu__section-item--feedback no-circle"
+              href="https://goo.gl/forms/eKMII00ylUf6dJ7i1"
+              target="_blank"
+              rel="noopener noreferrer">
+                <div className="menu__section-item-title no-circle">
+                  Leave feedback
+                </div>
+              </a>
+            </div>
+
             <div className="menu__section menu__section--credit no-circle">
               <div className="menu__section-item no-circle">
                 <div className="menu__section-item-title no-circle">

@@ -645,6 +645,12 @@
   color: black;
 }
 
+.menu__section-item--feedback {
+  text-decoration: none;
+  color: black;
+  display: block;
+}
+
 .onboarding-confirmation-link {
   text-decoration: underline;
   pointer-events: auto;
