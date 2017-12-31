@@ -52,7 +52,7 @@
     -->
 
     <script>
-      if (window.location.hostname !== 'localhost') {
+      if (window.location.hostname !== 'localhost' && !window.location.search.includes('is_automated=true')) {
         // Google Analytics
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}

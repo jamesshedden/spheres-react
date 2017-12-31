@@ -735,7 +735,8 @@ class App extends Component {
           <div className="menu__content no-circle" id="menu-content">
             {
               this.state.isMenuOpen ?
-              <div className="close-menu-icon no-circle"
+              <div id="close-menu-icon"
+              className="close-menu-icon no-circle"
               onClick={ this.closeMenu }>
                 <div className="close-menu-icon__desktop-image no-circle">
                   <CloseIcon/>
@@ -756,6 +757,7 @@ class App extends Component {
             <div className="menu__section no-circle">
               <div className="menu__section-item no-circle">
                 <div onClick={ this.randomiseSettings }
+                id="randomise-menu-item"
                 className="menu__section-item-title no-circle">
                   Randomise!
                 </div>
@@ -1170,7 +1172,8 @@ class App extends Component {
               )
               || this.state.isUserFullyOnboarded
             )
-              ? <div className="icons__icon open-menu-icon no-circle"
+              ? <div id="open-menu-icon"
+                className="icons__icon open-menu-icon no-circle"
                 onClick={ this.openMenu }>
                   <MenuIcon/>
                 </div>
